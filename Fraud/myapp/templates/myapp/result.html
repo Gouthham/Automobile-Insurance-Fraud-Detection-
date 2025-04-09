@@ -1,0 +1,39 @@
+<html>
+<head>
+    <title>Search Policy</title>
+</head>
+<body>
+<h1>Insurance Policy Details</h1>
+    <table border="1">
+        <tr>
+            <th>Policy Number</th>
+            <th>Name</th>
+            <th>Principal Amount</th>
+            <th>License No</th>
+            <th>Engine No</th>
+            <th>Policy Start Date</th>
+            <th>Policy End Date</th>
+            <th>Price of Vehicle</th>
+            <th>Past Claims</th>
+        </tr>
+        <tr>
+            <td>{{ result.Policy_no }}</td>
+            <td>{{ result.Name }}</td>
+            <td>{{ result.Principal_amt }}</td>
+            <td>{{ result.Driving_License_No }}</td>
+            <td>{{ result.Engine_no }}</td>
+            <td>{{ result.Policy_start_date }}</td>
+            <td>{{ result.Policy_End_date }}</td>
+            <td>{{ result.Price_of_vehicle }}</td>
+            <td>{{ result.Past_claims }}</td>
+        </tr>
+    </table>
+
+    <br>
+    <a href="/">Back to Search</a>
+
+    <br>
+    <a href="{% url 'fraud_form' result.Policy_no %}">Check for Fraud</a>
+
+</body>
+</html>

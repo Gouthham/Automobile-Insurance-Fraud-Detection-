@@ -1,0 +1,15 @@
+<!-- Fraud/myapp/templates/myapp/search_form.html -->
+<html>
+<head>
+    <title>Search Policy</title>
+</head>
+<body>
+    <h2>Search for an Insurance Policy</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="policy_number">Enter Policy Number:</label>
+        <input type="text" name="policy_number" required />
+        <button type="submit">Search</button>
+    </form>
+</body>
+</html>

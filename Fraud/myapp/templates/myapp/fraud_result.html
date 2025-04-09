@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>Fraud Prediction Result</title>
+</head>
+<body>
+    <h2>Fraud Check Result</h2>
+
+    <p><strong>Status:</strong> {{ result.prediction }}</p>
+    {% if result.prediction == "Fraud" %}
+    <p><strong>Fraud Probability:</strong> {{ result.fraud_probability }}%</p>
+    {% elif result.prediction == "Legitimate" %}
+    <p><strong>Legitimate Case:</strong> {{ result.fraud_probability }}%</p>
+    {% endif %}
+
+    <br>
+    <a href="/">Back to Search</a>
+</body>
+</html>

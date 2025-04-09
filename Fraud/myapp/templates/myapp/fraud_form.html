@@ -1,0 +1,94 @@
+<html>
+<head>
+    <title>Fraud Check Form</title>
+</head>
+<body>
+    <h2>Fraud Detection Form</h2>
+    <form method="POST" enctype="multipart/form-data" action="{% url 'predict_fraud' %}">
+        {% csrf_token %}
+
+        <!-- Auto-filled Fields -->
+        <label>Name:</label>
+        <input type="text" name="name" value="{{ prefill.name }}" readonly><br><br>
+
+        <label>Age:</label>
+        <input type="number" name="age" value="{{ prefill.age }}" readonly><br><br>
+
+        <label>Driving License No:</label>
+        <input type="text" name="driving_license_no" value="{{ prefill.driving_license_no }}" readonly><br><br>
+
+        <label>Engine No:</label>
+        <input type="text" name="engine_no" value="{{ prefill.engine_no }}" readonly><br><br>
+
+        <label>Body Type:</label>
+        <input type="text" name="body_type" value="{{ prefill.body_type }}" readonly><br><br>
+
+        <label>Vehicle Use:</label>
+        <input type="text" name="vehicle_use" value="{{ prefill.vehicle_use }}" readonly><br><br>
+
+        <label>Policy No:</label>
+        <input type="text" name="policy_no" value="{{ prefill.policy_no }}" readonly><br><br>
+
+        <label>Policy Start Date:</label>
+        <input type="date" name="policy_start_date" value="{{ prefill.policy_start_date }}" readonly><br><br>
+
+        <label>Policy End Date:</label>
+        <input type="date" name="policy_End_date" value="{{ prefill.policy_End_date }}" readonly><br><br>
+
+        <label>Type of Incident:</label>
+        <input type="text" name="type_of_incident" value="{{ prefill.type_of_incident }}" readonly><br><br>
+
+        <label>Price of Vehicle:</label>
+        <input type="number" name="price_of_vehicle" value="{{ prefill.price_of_vehicle }}" readonly><br><br>
+
+        <label>Market Value:</label>
+        <input type="number" name="market_value" value="{{ prefill.market_value }}"><br><br>
+
+        <!-- Manual Input Fields -->
+        <label>Damage Severity:</label>
+        <input type="text" name="damage_severity"><br><br>
+
+        <label>Vehicle Age:</label>
+        <input type="number" name="vehicle_age"><br><br>
+
+        <label>Claim Amount:</label>
+        <input type="number" name="claim_amt"><br><br>
+
+        <label>Drinking:</label>
+        <select name="drinking">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br><br>
+
+        <label>Eyewitness:</label>
+        <select name="eyewitness">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br><br>
+
+        <label>Past Claims:</label>
+        <select name="past_claims">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br><br>
+
+        <label>Substantial Proofs:</label>
+        <select name="substantial_proofs">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select><br><br>
+
+        <!-- Dual Input: Description -->
+        <label>Description (Text or PDF):</label><br>
+        <textarea name="description" rows="4" cols="50" placeholder="Enter description..."></textarea><br>
+        <input type="file" name="description_file" accept=".pdf,.txt"><br><br>
+
+        <!-- Dual Input: Police Report -->
+        <label>Police Report (Text or PDF):</label><br>
+        <textarea name="police_report" rows="4" cols="50" placeholder="Enter police report..."></textarea><br>
+        <input type="file" name="police_report_file" accept=".pdf,.txt"><br><br>
+
+        <button type="submit">Submit for Fraud Check</button>
+    </form>
+</body>
+</html>

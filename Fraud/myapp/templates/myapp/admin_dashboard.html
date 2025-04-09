@@ -1,0 +1,40 @@
+<!-- templates/myapp/admin_dashboard.html -->
+{% extends 'myapp/admin_base.html' %}
+{% block title %}Admin - Search Policy{% endblock %}
+
+{% block content %}
+<h2 class="text-xl font-semibold mb-4 text-blue-800">🔍 Search Policy Holder</h2>
+<form method="POST" class="mb-6 flex space-x-4">
+    {% csrf_token %}
+    <input type="text" name="policy_number" placeholder="Enter Policy Number" required
+           class="px-4 py-2 border border-gray-300 rounded shadow-sm w-1/2">
+    <button type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-md transition">
+        Search
+    </button>
+</form>
+
+{% if result %}
+    <div class="bg-white p-6 rounded shadow-md border">
+        <h3 class="text-lg font-semibold mb-4 text-green-700">✅ Policy Details</h3>
+        <table class="table-auto w-full text-left">
+            <tr><th class="p-2">Name</th><td>{{ result.Name }}</td></tr>
+            <tr><th class="p-2">Policy No</th><td>{{ result.Policy_no }}</td></tr>
+            <tr><th class="p-2">Principal Amount</th><td>{{ result.Principal_amt }}</td></tr>
+            <tr><th class="p-2">License No</th><td>{{ result.Driving_License_No }}</td></tr>
+            <tr><th class="p-2">Engine No</th><td>{{ result.Engine_no }}</td></tr>
+            <tr><th class="p-2">Start Date</th><td>{{ result.Policy_start_date }}</td></tr>
+            <tr><th class="p-2">End Date</th><td>{{ result.Policy_End_date }}</td></tr>
+            <tr><th class="p-2">Price of Vehicle</th><td>{{ result.Price_of_vehicle }}</td></tr>
+            <tr><th class="p-2">Past Claims</th><td>{{ result.Past_claims }}</td></tr>
+        </table>
+
+        <div class="mt-6">
+            <a href="{% url 'fraud_form' result.Policy_no %}"
+               class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-md transition">
+                🚨 Check for Fraud
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
