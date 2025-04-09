@@ -16,7 +16,7 @@
 
 {% if result %}
     <div class="bg-white p-6 rounded shadow-md border">
-        <h3 class="text-lg font-semibold mb-4 text-green-700">✅ User Policy Details</h3>
+        <h3 class="text-lg font-semibold mb-4 text-green-700">✅ Policy Details</h3>
         <table class="table-auto w-full text-left">
             <tr><th class="p-2">Name</th><td>{{ result.Name }}</td></tr>
             <tr><th class="p-2">Policy No</th><td>{{ result.Policy_no }}</td></tr>
@@ -32,7 +32,7 @@
         <div class="mt-6">
             <a href="{% url 'fraud_form' result.Policy_no %}"
                class="bg-aqua-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-md transition">
-                🚨 Check for the Fraud
+                🚨 Check for Fraud
             </a>
         </div>
     </div>
