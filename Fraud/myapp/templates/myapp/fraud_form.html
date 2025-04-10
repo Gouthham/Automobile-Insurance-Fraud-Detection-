@@ -1,94 +1,216 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Fraud Check Form</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input[readonly] {
+            background-color: #f1f1f1;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input[type="file"] {
+            margin-top: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
 </head>
 <body>
-    <h2>Fraud Detection Form</h2>
-    <form method="POST" enctype="multipart/form-data" action="{% url 'predict_fraud' %}">
-        {% csrf_token %}
+    <div class="container">
+        <h2>Fraud Detection Form</h2>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'predict_fraud' %}">
+            {% csrf_token %}
 
-        <!-- Auto-filled Fields -->
-        <label>Name:</label>
-        <input type="text" name="name" value="{{ prefill.name }}" readonly><br><br>
+            <!-- Auto-filled Fields -->
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" name="name" value="{{ prefill.name }}" readonly>
+            </div>
 
-        <label>Age:</label>
-        <input type="number" name="age" value="{{ prefill.age }}" readonly><br><br>
+            <div class="form-group">
+                <label>Age:</label>
+                <input type="number" name="age" value="{{ prefill.age }}" readonly>
+            </div>
 
-        <label>Driving License No:</label>
-        <input type="text" name="driving_license_no" value="{{ prefill.driving_license_no }}" readonly><br><br>
+            <div class="form-group">
+                <label>Driving License No:</label>
+                <input type="text" name="driving_license_no" value="{{ prefill.driving_license_no }}" readonly>
+            </div>
 
-        <label>Engine No:</label>
-        <input type="text" name="engine_no" value="{{ prefill.engine_no }}" readonly><br><br>
+            <div class="form-group">
+                <label>Engine No:</label>
+                <input type="text" name="engine_no" value="{{ prefill.engine_no }}" readonly>
+            </div>
 
-        <label>Body Type:</label>
-        <input type="text" name="body_type" value="{{ prefill.body_type }}" readonly><br><br>
+            <div class="form-group">
+                <label>Body Type:</label>
+                <input type="text" name="body_type" value="{{ prefill.body_type }}" readonly>
+            </div>
 
-        <label>Vehicle Use:</label>
-        <input type="text" name="vehicle_use" value="{{ prefill.vehicle_use }}" readonly><br><br>
+            <div class="form-group">
+                <label>Vehicle Use:</label>
+                <input type="text" name="vehicle_use" value="{{ prefill.vehicle_use }}" readonly>
+            </div>
 
-        <label>Policy No:</label>
-        <input type="text" name="policy_no" value="{{ prefill.policy_no }}" readonly><br><br>
+            <div class="form-group">
+                <label>Policy No:</label>
+                <input type="text" name="policy_no" value="{{ prefill.policy_no }}" readonly>
+            </div>
 
-        <label>Policy Start Date:</label>
-        <input type="date" name="policy_start_date" value="{{ prefill.policy_start_date }}" readonly><br><br>
+            <div class="form-group">
+                <label>Policy Start Date:</label>
+                <input type="date" name="policy_start_date" value="{{ prefill.policy_start_date }}" readonly>
+            </div>
 
-        <label>Policy End Date:</label>
-        <input type="date" name="policy_End_date" value="{{ prefill.policy_End_date }}" readonly><br><br>
+            <div class="form-group">
+                <label>Policy End Date:</label>
+                <input type="date" name="policy_End_date" value="{{ prefill.policy_End_date }}" readonly>
+            </div>
 
-        <label>Type of Incident:</label>
-        <input type="text" name="type_of_incident" value="{{ prefill.type_of_incident }}" readonly><br><br>
+            <div class="form-group">
+                <label>Type of Incident:</label>
+                <input type="text" name="type_of_incident" value="{{ prefill.type_of_incident }}" readonly>
+            </div>
 
-        <label>Price of Vehicle:</label>
-        <input type="number" name="price_of_vehicle" value="{{ prefill.price_of_vehicle }}" readonly><br><br>
+            <div class="form-group">
+                <label>Price of Vehicle:</label>
+                <input type="number" name="price_of_vehicle" value="{{ prefill.price_of_vehicle }}" readonly>
+            </div>
 
-        <label>Market Value:</label>
-        <input type="number" name="market_value" value="{{ prefill.market_value }}"><br><br>
+            <div class="form-group">
+                <label>Market Value:</label>
+                <input type="number" name="market_value" value="{{ prefill.market_value }}">
+            </div>
 
-        <!-- Manual Input Fields -->
-        <label>Damage Severity:</label>
-        <input type="text" name="damage_severity"><br><br>
+            <!-- Manual Input Fields -->
+            <div class="form-group">
+                <label>Damage Severity:</label>
+                <input type="text" name="damage_severity">
+            </div>
 
-        <label>Vehicle Age:</label>
-        <input type="number" name="vehicle_age"><br><br>
+            <div class="form-group">
+                <label>Vehicle Age:</label>
+                <input type="number" name="vehicle_age">
+            </div>
 
-        <label>Claim Amount:</label>
-        <input type="number" name="claim_amt"><br><br>
+            <div class="form-group">
+                <label>Claim Amount:</label>
+                <input type="number" name="claim_amt">
+            </div>
 
-        <label>Drinking:</label>
-        <select name="drinking">
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-        </select><br><br>
+            <div class="form-group">
+                <label>Drinking:</label>
+                <select name="drinking">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
 
-        <label>Eyewitness:</label>
-        <select name="eyewitness">
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-        </select><br><br>
+            <div class="form-group">
+                <label>Eyewitness:</label>
+                <select name="eyewitness">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
 
-        <label>Past Claims:</label>
-        <select name="past_claims">
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-        </select><br><br>
+            <div class="form-group">
+                <label>Past Claims:</label>
+                <select name="past_claims">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
 
-        <label>Substantial Proofs:</label>
-        <select name="substantial_proofs">
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-        </select><br><br>
+            <div class="form-group">
+                <label>Substantial Proofs:</label>
+                <select name="substantial_proofs">
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
 
-        <!-- Dual Input: Description -->
-        <label>Description (Text or PDF):</label><br>
-        <textarea name="description" rows="4" cols="50" placeholder="Enter description..."></textarea><br>
-        <input type="file" name="description_file" accept=".pdf,.txt"><br><br>
+            <!-- Description and Police Report -->
+            <div class="form-group">
+                <label>Description (Text or PDF):</label>
+                <textarea name="description" placeholder="Enter description..."></textarea>
+                <input type="file" name="description_file" accept=".pdf,.txt">
+            </div>
 
-        <!-- Dual Input: Police Report -->
-        <label>Police Report (Text or PDF):</label><br>
-        <textarea name="police_report" rows="4" cols="50" placeholder="Enter police report..."></textarea><br>
-        <input type="file" name="police_report_file" accept=".pdf,.txt"><br><br>
+            <div class="form-group">
+                <label>Police Report (Text or PDF):</label>
+                <textarea name="police_report" placeholder="Enter police report..."></textarea>
+                <input type="file" name="police_report_file" accept=".pdf,.txt">
+            </div>
 
-        <button type="submit">Submit for Fraud Check</button>
-    </form>
+            <button type="submit">Submit for Fraud Check</button>
+        </form>
+    </div>
 </body>
 </html>
