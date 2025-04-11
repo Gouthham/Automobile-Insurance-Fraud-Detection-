@@ -1,0 +1,12 @@
+<!-- templates/myapp/profile.html -->
+{% extends 'myapp/base.html' %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<h1 class="text-xl font-bold text-blue-700">👤 Profile Information</h1>
+<ul class="mt-4 space-y-2 text-gray-700">
+    <li><strong>Name:</strong> {{ user.username }}</li>
+    <li><strong>Email:</strong> {{ user.email }}</li>
+    <li><strong>Is Admin:</strong> {{ user.is_superuser }}</li>
+</ul>
+{% endblock %}
