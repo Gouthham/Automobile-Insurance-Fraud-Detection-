@@ -184,3 +184,48 @@ def admin_dashboard(request):
             result = filtered.to_dict(orient='records')[0]
     
     return render(request, 'myapp/admin_dashboard.html', {'result': result})
+
+from django.contrib.auth.decorators import login_required
+
+def user_dashboard(request):
+    name = request.session.get('candidate_name')
+    policy = request.session.get('candidate_policy_no')
+    if name and policy:
+        return render(request, 'myapp/user_dashboard.html', {
+            'candidate_name': name,
+            'candidate_policy_no': policy
+        })
+    return redirect('login')
+
+
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+
+from .models import Candidate
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.shortcuts import redirect, render
+
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        policy_no = request.POST.get('password')
+
+        # Try authenticating superusers first
+        user = authenticate(request, username=username, password=policy_no)
+        if user:
+            login(request, user)
+            if user.is_superuser:
+                return redirect('admin_dashboard')
+        
+        # Now try claimers using Candidate model
+        try:
+            candidate = Candidate.objects.get(name=username, policy_no=policy_no)
+            request.session['candidate_name'] = candidate.name
+            request.session['candidate_policy_no'] = candidate.policy_no
+            return redirect('user_dashboard')
+        except Candidate.DoesNotExist:
+            return render(request, 'myapp/login.html', {'error': 'Invalid credentials'})
+
+    return render(request, 'myapp/login.html')
+

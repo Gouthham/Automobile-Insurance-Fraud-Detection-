@@ -6,11 +6,13 @@
     <h2>Fraud Check Result</h2>
 
     <p><strong>Status:</strong> {{ result.prediction }}</p>
-    {% if result.prediction == "Fraud" %}
     <p><strong>Fraud Probability:</strong> {{ result.fraud_probability }}%</p>
-    {% elif result.prediction == "Legitimate" %}
-    <p><strong>Legitimate Case:</strong> {{ result.fraud_probability }}%</p>
-    {% endif %}
+    <p><strong>Reason:</strong> {{ result.explanation }}</p>
+
+    <h3>NLP Analysis (Unstructured Text)</h3>
+    <p><strong>Description Fraud Score:</strong> {{ result.nlp_fraud_score }}%</p>
+    <p><strong>Top Keywords Detected:</strong> {{ result.nlp_keywords|join:", " }}</p>
+    <p><strong>Similarity with Police Report:</strong> {{ result.nlp_similarity }}%</p>
 
     <br>
     <a href="/">Back to Search</a>
