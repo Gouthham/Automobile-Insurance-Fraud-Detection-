@@ -1,23 +1,34 @@
-<!-- templates/myapp/admin_base.html -->
+<!-- templates/myapp/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Admin Dashboard{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>{% block title %}Auto Insurance{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 font-sans leading-normal tracking-normal">
-    <!-- Navigation Bar -->
-    <nav class="bg-blue-800 p-4 shadow-md">
-        <div class="container mx-auto">
-            <div class="text-white text-2xl font-bold">
-                🚗 Auto Insurance | <span class="text-yellow-300">Fraud Detection Admin</span>
-            </div>
-        </div>
-    </nav>
+<body class="bg-gray-50 font-sans">
 
-    <main class="p-6">
-        {% block content %}{% endblock %}
-    </main>
+<!-- Navbar -->
+<nav class="bg-blue-800 p-4 shadow-md flex justify-between items-center">
+    <div class="text-white text-2xl font-bold">🚗 Auto Insurance</div>
+
+    <div class="relative group">
+        {% if user.is_authenticated %}
+            <button class="text-white font-semibold hover:text-yellow-300 transition focus:outline-none">
+                👤 {{ user.username }}
+            </button>
+            <div class="absolute right-0 hidden group-hover:block bg-white border mt-2 rounded shadow-md z-50">
+                <a href="{% url 'profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
+            </div>
+        {% else %}
+            <a href="{% url 'login' %}" class="text-white font-semibold hover:text-yellow-300 transition">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+<main class="p-6">
+    {% block content %}{% endblock %}
+</main>
 </body>
 </html>

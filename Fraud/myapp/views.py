@@ -9,6 +9,9 @@ import pandas as pd
 from django.conf import settings
 import os
 
+def main_page(request):
+    return render(request, 'myapp/main.html')
+
 def load_data():
     file_path = os.path.join(settings.BASE_DIR, 'myapp', 'data', 'final_data.csv')
     return pd.read_csv(file_path)
@@ -128,9 +131,6 @@ def predict_fraud(request):
         anomaly_score = iso_forest.decision_function(input_scaled)
         fraud_prob = np.clip((1 - anomaly_score) * 100, 0, 100)
 
-        # ---------------------------
-        # RULE-BASED EXPLANATION LOGIC
-        # ---------------------------
         explanation = None
         status = "Legitimate"
 
@@ -169,6 +169,11 @@ def predict_fraud(request):
     return HttpResponse("Invalid Request")
 
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def profile(request):
+    return render(request, 'myapp/profile.html')
 
 
 def admin_dashboard(request):
