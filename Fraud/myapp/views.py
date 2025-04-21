@@ -234,3 +234,166 @@ def user_login(request):
 
     return render(request, 'myapp/login.html')
 
+
+
+import fitz  # PyMuPDF
+import pytesseract
+from sklearn.metrics.pairwise import cosine_similarity
+
+def extract_text_from_file(file):
+    ext = os.path.splitext(file.name)[1]
+    text = ""
+
+    if ext.lower() == ".pdf":
+        try:
+            pdf = fitz.open(stream=file.read(), filetype="pdf")
+            for page in pdf:
+                text += page.get_text()
+        except:
+            text += ""
+    else:
+        try:
+            text += file.read().decode("utf-8")
+        except:
+            text += ""
+    return text.strip()
+
+
+def predict_fraud(request):
+    if request.method == 'POST':
+        form_data = request.POST
+
+        # Extract unstructured text inputs
+        desc_text = form_data.get('description', '')
+        desc_file = request.FILES.get('description_file')
+        if desc_file:
+            desc_text = extract_text_from_file(desc_file)
+
+        police_text = form_data.get('police_report', '')
+        police_file = request.FILES.get('police_report_file')
+        if police_file:
+            police_text = extract_text_from_file(police_file)
+
+        # Load NLP model + vectorizer
+        vectorizer_path = os.path.join(settings.MODEL_DIR, 'tfidf_vectorizer.pkl')
+        model_path = os.path.join(settings.MODEL_DIR, 'svm_tfidf_nu003_model.pkl')
+        vectorizer = joblib.load(vectorizer_path)
+        nlp_model = joblib.load(model_path)
+
+        # Vectorize description
+        X_desc = vectorizer.transform([desc_text])
+        desc_score = np.clip((1 - nlp_model.decision_function(X_desc.toarray())[0]) * 100, 0, 100)
+        nlp_pred = nlp_model.predict(X_desc.toarray())[0]
+
+
+        # Extract top keywords from TF-IDF
+        feature_names = vectorizer.get_feature_names_out()
+        tfidf_scores = X_desc.toarray()[0]
+        top_indices = np.argsort(tfidf_scores)[::-1][:5]
+        top_keywords = [feature_names[i] for i in top_indices if tfidf_scores[i] > 0]
+
+        # Cosine similarity with police report
+        X_police = vectorizer.transform([police_text])
+        similarity = cosine_similarity(X_desc.toarray(), X_police.toarray())[0][0] * 100
+
+
+        # Existing structured model logic
+        input_dict = {
+            'Type_of_Incident': form_data.get('type_of_incident'),
+            'Body_type': form_data.get('body_type'),
+            'Driving_license_valid': 1 if form_data.get('driving_license_no') else 0,
+            'Drinking': 1 if form_data.get('drinking') == 'Yes' else 0,
+            'Eyewitness': 1 if form_data.get('eyewitness') == 'Yes' else 0,
+            'Past_claims': 1 if form_data.get('past_claims') == 'Yes' else 0,
+            'Substantial_proofs': 1 if form_data.get('substantial_proofs') == 'Yes' else 0,
+            'Principal_amt': float(form_data.get('principal_amt', 0)),
+            'Claim_amt': float(form_data.get('claim_amt', 0)),
+            'Vehicle_age': int(form_data.get('vehicle_age', 0)),
+            'Price_of_vehicle': float(form_data.get('price_of_vehicle', 0)),
+            'Market_value': float(form_data.get('market_value', 0)),
+        }
+
+        if input_dict["Type_of_Incident"].lower() == "theft":
+            input_dict.pop("Drinking", None)
+            input_dict.pop("Eyewitness", None)
+            input_dict.pop("Past_claims", None)
+
+        model_path = os.path.join(settings.MODEL_DIR, 'structured_model.pkl')
+        scaler_path = os.path.join(settings.MODEL_DIR, 'scaler.pkl')
+        iso_forest = joblib.load(model_path)
+        scaler = joblib.load(scaler_path)
+
+        input_df = pd.DataFrame([input_dict])
+        input_df = input_df.reindex(columns=scaler.feature_names_in_, fill_value=0)
+        input_df = input_df.apply(pd.to_numeric, errors='coerce')
+        input_scaled = scaler.transform(input_df)
+
+        prediction = iso_forest.predict(input_scaled)
+        anomaly_score = iso_forest.decision_function(input_scaled)
+        fraud_prob = np.clip((1 - anomaly_score) * 100, 0, 100)
+
+        status = "Legitimate"
+        explanation = None
+        if input_dict["Claim_amt"] > input_dict["Price_of_vehicle"] and input_dict["Claim_amt"] > input_dict["Market_value"]:
+            status = "Fraud"
+            explanation = "Claim exceeds vehicle and market value."
+        elif input_dict["Type_of_Incident"].lower() == "theft" and input_dict["Claim_amt"] == input_dict["Market_value"]:
+            status = "Verification Needed"
+            explanation = "Claim equals market value."
+        elif input_dict["Driving_license_valid"] == 0:
+            status = "Fraud"
+            explanation = "Invalid driving license."
+        elif "Drinking" in input_dict and input_dict["Drinking"] == 1:
+            status = "Fraud"
+            explanation = "Drinking involved."
+        elif prediction[0] == -1:
+            status = "Fraud"
+            explanation = "Anomaly detected."
+
+        # Final Result
+        result = {
+            "prediction": status,
+            "fraud_probability": f"{fraud_prob[0]:.2f}",
+            "explanation": explanation or "No specific red flag.",
+            "nlp_fraud_score": f"{desc_score:.2f}",
+            "nlp_keywords": top_keywords,
+            "nlp_similarity": f"{similarity:.2f}",
+        }
+
+        return render(request, 'myapp/fraud_result.html', {'result': result})
+
+    return HttpResponse("Invalid Request")
+
+
+
+def document_scan(request):
+    return render(request, 'myapp/document_scan.html')
+
+
+""" 
+# views.py
+import os
+import joblib
+from django.shortcuts import render
+from .utils import extract_text_from_files, calculate_fraud_score
+
+model = os.path.join(settings.MODEL_DIR, 'unstructured_model.pkl.pkl')
+
+def document_scan_view(request):
+    if request.method == "POST":
+        files = request.FILES.getlist('documents')
+        texts = extract_text_from_files(files)
+
+        combined_text = " ".join(texts)
+        prediction = model.predict([combined_text])[0]
+        probability = model.predict_proba([combined_text])[0][1] * 100
+
+        context = {
+            'prediction': "Fraud" if prediction == 1 else "Genuine",
+            'probability': round(probability, 2),
+            'details': f"Top keywords, analysis info here...",
+        }
+        return render(request, 'document_scan.html', context)
+
+    return render(request, 'document_scan.html')
+ """

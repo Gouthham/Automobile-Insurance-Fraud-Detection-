@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Detectra - Navbar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    nav.custom-nav {
+      background-color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border-bottom-left-radius: 0.5rem;
+      border-bottom-right-radius: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .custom-nav .brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1e3a8a; /* Tailwind blue-800 */
+    }
+
+    .custom-nav .login-link {
+      color: #1e3a8a;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .custom-nav .login-link:hover {
+      color: #dc2626; /* Tailwind red-600 */
+    }
+  </style>
+</head>
+<body class="bg-blue-50">
+
+  <!-- Navigation Bar -->
+  <nav class="custom-nav">
+    <div class="brand">Detectra</div>
+    <div>
+      <a href="{% url 'login' %}" class="login-link">Login</a>
+    </div>
+  </nav>
+
+</body>
+</html>

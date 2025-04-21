@@ -1,20 +1,115 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fraud Prediction Result</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>Fraud Check Result</h2>
+<body class="bg-gray-100 font-sans">
 
-    <p><strong>Status:</strong> {{ result.prediction }}</p>
-    <p><strong>Fraud Probability:</strong> {{ result.fraud_probability }}%</p>
-    <p><strong>Reason:</strong> {{ result.explanation }}</p>
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto my-10 bg-white p-8 rounded-lg shadow-lg">
+        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Fraud Check Result</h2>
 
-    <h3>NLP Analysis (Unstructured Text)</h3>
-    <p><strong>Description Fraud Score:</strong> {{ result.nlp_fraud_score }}%</p>
-    <p><strong>Top Keywords Detected:</strong> {{ result.nlp_keywords|join:", " }}</p>
-    <p><strong>Similarity with Police Report:</strong> {{ result.nlp_similarity }}%</p>
+        <!-- Fraud Status and Probability -->
+        <div class="space-y-6 mb-8">
+            <div class="bg-blue-100 p-6 rounded-lg shadow-md">
+                <p class="text-xl font-semibold text-gray-800">
+                    <strong>Status:</strong> 
+                    {% if result.prediction == 'Fraud' %}
+                        <span class="text-lg text-red-600">{{ result.prediction }}</span>
+                    {% else %}
+                        <span class="text-lg text-green-600">{{ result.prediction }}</span>
+                    {% endif %}
+                </p>
+                <p class="text-xl font-semibold text-gray-800">
+                    <strong>Fraud Probability:</strong> 
+                    {% if result.fraud_probability > 50 %}
+                        <span class="text-2xl font-bold text-red-600">{{ result.fraud_probability }}%</span>
+                    {% else %}
+                        <span class="text-2xl font-bold text-green-600">{{ result.fraud_probability }}%</span>
+                    {% endif %}
+                </p>
+                <p class="text-lg text-gray-600">
+                    <strong>Reason:</strong> {{ result.explanation }}
+                </p>
+            </div>
+        </div>
 
-    <br>
-    <a href="/">Back to Search</a>
+        <!-- NLP Analysis Section -->
+        <div class="space-y-6 mb-8">
+            <h3 class="text-2xl font-semibold text-gray-800">NLP Analysis (Unstructured Text)</h3>
+            
+            <div class="bg-yellow-100 p-6 rounded-lg shadow-md">
+                <p class="text-lg font-semibold text-gray-800">
+                    <strong>Description Fraud Score:</strong> 
+                    {% if result.nlp_fraud_score > 50 %}
+                        <span class="text-xl font-bold text-red-600">{{ result.nlp_fraud_score }}%</span>
+                    {% else %}
+                        <span class="text-xl font-bold text-green-600">{{ result.nlp_fraud_score }}%</span>
+                    {% endif %}
+                </p>
+                <p class="text-lg font-semibold text-gray-800">
+                    <strong>Top Keywords Detected:</strong> 
+                    <span class="text-lg text-gray-700">{{ result.nlp_keywords|join:", " }}</span>
+                </p>
+                <p class="text-lg font-semibold text-gray-800">
+                    <strong>Similarity with Police Report:</strong>
+                    {% if result.nlp_similarity < 50 %}
+                        <span class="text-xl font-bold text-red-600">{{ result.nlp_similarity }}%</span>
+                    {% else %}
+                        <span class="text-xl font-bold text-green-600">{{ result.nlp_similarity }}%</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Fraud Probability Chart -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">Fraud Probability Chart</h3>
+            <canvas id="fraudProbabilityChart"></canvas>
+        </div>
+
+        <!-- Back Link -->
+        <div class="flex justify-center">
+            <a href="/" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg font-semibold transition ease-in-out duration-300">Back to Search</a>
+        </div>
+    </div>
+
+    <script>
+        // Set up fraud probability chart
+        var ctx = document.getElementById('fraudProbabilityChart').getContext('2d');
+        var fraudProbabilityChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Fraud Probability', 'Remaining Probability'],
+                datasets: [{
+                    label: 'Fraud Probability',
+                    data: [{{ result.fraud_probability }}, 100 - {{ result.fraud_probability }}],
+                    backgroundColor: ['#F87171', '#D1D5DB'],
+                    borderColor: ['#F87171', '#D1D5DB'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
 </body>
 </html>

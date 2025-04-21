@@ -3,7 +3,7 @@
 {% block title %}Admin - Search Policy{% endblock %}
 
 {% block content %}
-<h2 class="text-xl font-semibold mb-4 text-blue-800">🔍 Search Policy Holder</h2>
+<h2 class="text-xl font-semibold mb-4 text-blue-800">Search Policy Holder</h2>
 <form method="POST" class="mb-6 flex space-x-4">
     {% csrf_token %}
     <input type="text" name="policy_number" placeholder="Enter Policy Number" required
