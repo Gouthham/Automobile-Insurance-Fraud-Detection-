@@ -6,110 +6,186 @@
     <title>Fraud Prediction Result</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        nav.custom-nav {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .custom-nav .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .custom-nav .login-link {
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .custom-nav .login-link:hover {
+            color: #dc2626;
+        }
+
+        .nav-links a {
+            margin-left: 1rem;
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #dc2626;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <!-- Main Container -->
-    <div class="max-w-4xl mx-auto my-10 bg-white p-8 rounded-lg shadow-lg">
-        <h2 class="text-3xl font-semibold text-center text-gray-800 mb-6">Fraud Check Result</h2>
+<!-- Navbar -->
+<nav class="custom-nav">
+    <a href="#" id="detectra-logo" class="text-2xl font-bold text-blue-900 hover:text-blue-700 transition duration-200">
+        Detectra
+    </a>
+    <div class="nav-links">
+        {% if user.is_authenticated %}
+            <a href="{% url 'document_scan' %}">Document Scan</a>
+            <a href="#" onclick="showLogoutModal()">Logout</a>
+            <a href="{% url 'profile' %}">Profile</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="login-link">Login</a>
+        {% endif %}
+    </div>
+</nav>
 
-        <!-- Fraud Status and Probability -->
-        <div class="space-y-6 mb-8">
-            <div class="bg-blue-100 p-6 rounded-lg shadow-md">
-                <p class="text-xl font-semibold text-gray-800">
-                    <strong>Status:</strong> 
-                    {% if result.prediction == 'Fraud' %}
-                        <span class="text-lg text-red-600">{{ result.prediction }}</span>
-                    {% else %}
-                        <span class="text-lg text-green-600">{{ result.prediction }}</span>
-                    {% endif %}
-                </p>
-                <p class="text-xl font-semibold text-gray-800">
-                    <strong>Fraud Probability:</strong> 
-                    {% if result.fraud_probability > 50 %}
-                        <span class="text-2xl font-bold text-red-600">{{ result.fraud_probability }}%</span>
-                    {% else %}
-                        <span class="text-2xl font-bold text-green-600">{{ result.fraud_probability }}%</span>
-                    {% endif %}
-                </p>
-                <p class="text-lg text-gray-600">
-                    <strong>Reason:</strong> {{ result.explanation }}
-                </p>
-            </div>
+<!-- Main Container -->
+<div class="max-w-7xl mx-auto my-6 px-4">
+    <!-- Top Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-red-100 p-4 rounded-lg shadow-md">
+            <p class="text-xl font-semibold text-gray-800">Status:</p>
+            <p class="text-2xl font-bold text-red-600">{{ result.prediction }}</p>
         </div>
-
-        <!-- NLP Analysis Section -->
-        <div class="space-y-6 mb-8">
-            <h3 class="text-2xl font-semibold text-gray-800">NLP Analysis (Unstructured Text)</h3>
-            
-            <div class="bg-yellow-100 p-6 rounded-lg shadow-md">
-                <p class="text-lg font-semibold text-gray-800">
-                    <strong>Description Fraud Score:</strong> 
-                    {% if result.nlp_fraud_score > 50 %}
-                        <span class="text-xl font-bold text-red-600">{{ result.nlp_fraud_score }}%</span>
-                    {% else %}
-                        <span class="text-xl font-bold text-green-600">{{ result.nlp_fraud_score }}%</span>
-                    {% endif %}
-                </p>
-                <p class="text-lg font-semibold text-gray-800">
-                    <strong>Top Keywords Detected:</strong> 
-                    <span class="text-lg text-gray-700">{{ result.nlp_keywords|join:", " }}</span>
-                </p>
-                <p class="text-lg font-semibold text-gray-800">
-                    <strong>Similarity with Police Report:</strong>
-                    {% if result.nlp_similarity < 50 %}
-                        <span class="text-xl font-bold text-red-600">{{ result.nlp_similarity }}%</span>
-                    {% else %}
-                        <span class="text-xl font-bold text-green-600">{{ result.nlp_similarity }}%</span>
-                    {% endif %}
-                </p>
-            </div>
+        <div class="bg-yellow-100 p-4 rounded-lg shadow-md">
+            <p class="text-xl font-semibold text-gray-800">Fraud Probability:</p>
+            <p class="text-2xl font-bold text-yellow-600">{{ result.fraud_probability }}%</p>
         </div>
-
-        <!-- Fraud Probability Chart -->
-        <div class="mb-8">
-            <h3 class="text-2xl font-semibold text-gray-800 mb-4">Fraud Probability Chart</h3>
-            <canvas id="fraudProbabilityChart"></canvas>
+        <div class="bg-green-100 p-4 rounded-lg shadow-md col-span-1 md:col-span-1">
+            <p class="text-xl font-semibold text-gray-800">Reason:</p>
+            <p class="text-base text-gray-700">{{ result.explanation }}</p>
         </div>
-
-        <!-- Back Link -->
-        <div class="flex justify-center">
-            <a href="/" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg font-semibold transition ease-in-out duration-300">Back to Search</a>
+        <div class="bg-white p-4 rounded-lg shadow-md">
+            <canvas id="fraudProbabilityChart" height="80"></canvas>
         </div>
     </div>
 
-    <script>
-        // Set up fraud probability chart
-        var ctx = document.getElementById('fraudProbabilityChart').getContext('2d');
-        var fraudProbabilityChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Fraud Probability', 'Remaining Probability'],
-                datasets: [{
-                    label: 'Fraud Probability',
-                    data: [{{ result.fraud_probability }}, 100 - {{ result.fraud_probability }}],
-                    backgroundColor: ['#F87171', '#D1D5DB'],
-                    borderColor: ['#F87171', '#D1D5DB'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw + '%';
-                            }
+    <!-- Quick Scan Upload -->
+    <div class="bg-blue-50 p-6 rounded-lg shadow-md mb-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Quick Document Scan</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="document" class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200" required>
+            <button type="submit" class="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">Scan Document</button>
+        </form>
+    </div>
+
+    <!-- Main Analysis Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Keywords -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Top Keywords Detected</h3>
+            <ul class="list-disc list-inside text-gray-700">
+                {% for word in result.nlp_keywords %}
+                    <li>{{ word }}</li>
+                {% empty %}
+                    <li>No keywords detected.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Description Score -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Description Fraud Score</h3>
+            <p class="text-2xl font-bold {% if result.nlp_fraud_score > 50 %}text-red-600{% else %}text-green-600{% endif %}">
+                {{ result.nlp_fraud_score }}%
+            </p>
+        </div>
+
+        <!-- Similarity -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Comparison with Police Report</h3>
+            <p class="text-2xl font-bold {% if result.nlp_similarity < 50 %}text-red-600{% else %}text-green-600{% endif %}">
+                {{ result.nlp_similarity }}%
+            </p>
+        </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="flex justify-center mt-10">
+        <a href="{% url 'admin_dashboard' %}" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg font-semibold transition ease-in-out duration-300">Back to Home</a>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script>
+    var ctx = document.getElementById('fraudProbabilityChart').getContext('2d');
+    var fraudProbabilityChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Fraud Probability', 'Remaining Probability'],
+            datasets: [{
+                label: 'Fraud Probability',
+                data: [{{ result.fraud_probability }}, 100 - {{ result.fraud_probability }}],
+                backgroundColor: ['#F87171', '#D1D5DB'],
+                borderColor: ['#F87171', '#D1D5DB'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return tooltipItem.label + ': ' + tooltipItem.raw + '%';
                         }
                     }
                 }
             }
-        });
-    </script>
+        }
+    });
+</script>
+
+<!-- Logout Script -->
+<script>
+    function showLogoutModal() {
+        document.getElementById('logout-modal').classList.remove('hidden');
+    }
+    function hideLogoutModal() {
+        document.getElementById('logout-modal').classList.add('hidden');
+    }
+    function submitLogout() {
+        document.getElementById('logout-form').submit();
+    }
+    document.getElementById('detectra-logo').addEventListener('click', function (event) {
+        event.preventDefault();
+        const currentPath = window.location.pathname;
+        const dashboardPath = "/admin-dashboard/";
+        if (currentPath === dashboardPath) {
+            window.location.reload();
+        } else {
+            window.location.href = dashboardPath;
+        }
+    });
+</script>
 
 </body>
 </html>
