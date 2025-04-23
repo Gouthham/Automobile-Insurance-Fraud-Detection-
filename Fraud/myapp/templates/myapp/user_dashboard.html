@@ -4,5 +4,30 @@
 {% block content %}
 <div class="text-xl text-blue-700 font-semibold">Welcome {{ candidate_name }}!</div>
 <p class="text-gray-700 mt-2">Policy Number: {{ candidate_policy_no }}</p>
-{% endblock %}
 
+<!-- Divider -->
+<hr class="my-4">
+
+<!-- Policy Status and Fraud Check -->
+<div class="bg-white p-4 rounded shadow-md">
+    <h2 class="text-lg font-semibold text-gray-800 mb-3">📝 Policy Details</h2>
+    <ul class="text-gray-700 space-y-2">
+        <li><strong>Vehicle:</strong> {{ candidate_vehicle }}</li>
+        <li><strong>Status:</strong> {{ candidate_status }}</li>
+        <li>
+            <strong>Fraud Check:</strong>
+            {% if is_fraud %}
+                <span class="text-red-600 font-bold">⚠ Fraud Detected</span>
+            {% else %}
+                <span class="text-green-600 font-medium">✔ No Fraud Detected</span>
+            {% endif %}
+        </li>
+    </ul>
+</div>
+
+<!-- Optional: Add report or support section -->
+<div class="mt-6 bg-gray-50 p-4 rounded">
+    <h3 class="text-md font-semibold text-gray-800 mb-2">Need Help?</h3>
+    <p class="text-sm text-gray-600">If you think there's a mistake or want to report something, please contact support.</p>
+</div>
+{% endblock %}

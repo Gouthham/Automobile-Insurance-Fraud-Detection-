@@ -326,6 +326,7 @@ def predict_fraud(request):
         input_df = pd.DataFrame([input_dict])
         input_df = input_df.reindex(columns=scaler.feature_names_in_, fill_value=0)
         input_df = input_df.apply(pd.to_numeric, errors='coerce')
+        input_df = input_df.fillna(0)
         input_scaled = scaler.transform(input_df)
 
         prediction = iso_forest.predict(input_scaled)
@@ -369,6 +370,72 @@ def predict_fraud(request):
 def document_scan(request):
     return render(request, 'myapp/document_scan.html')
 
+import os
+import pandas as pd
+from django.conf import settings
+from django.shortcuts import render
+
+def get_estimate(request):
+    if request.method == 'POST':
+        engine_no = request.POST.get('engine_no', '').strip().upper()
+
+        if not engine_no:
+            return render(request, 'myapp/get_estimate.html', {'error': 'Engine number cannot be empty.'})
+
+        try:
+            # Adjust path based on your file's actual location
+            csv_path = os.path.join(settings.BASE_DIR, 'myapp', 'data', 'final_data.csv')
+            if not os.path.exists(csv_path):
+                return render(request, 'myapp/get_estimate.html', {'error': 'CSV file not found.'})
+            
+            df = pd.read_csv(csv_path)
+            df['Engine_no'] = df['Engine_no'].astype(str).str.upper()
+
+            vehicle = df[df['Engine_no'] == engine_no]
+
+            if not vehicle.empty:
+                data = {
+                    'name': vehicle.iloc[0]['Name'],
+                    'body_type': vehicle.iloc[0]['Body_type'],
+                    'market_price': vehicle.iloc[0]['Market_value']
+                }
+                return render(request, 'myapp/get_estimate.html', {'data': data})
+            else:
+                return render(request, 'myapp/get_estimate.html', {'error': 'No vehicle found for the given engine number.'})
+
+        except Exception as e:
+            return render(request, 'myapp/get_estimate.html', {'error': f'Error: {str(e)}'})
+
+    return render(request, 'myapp/get_estimate.html', {'error': 'Invalid request'})
+
+
+# import pandas as pd
+# from django.shortcuts import render
+# from django.conf import settings
+# import os
+
+# def get_estimate(request):
+#     if request.method == 'GET':
+#         engine_number = request.GET.get('Engine_no', '').strip()
+
+#         if engine_number:
+#             # Load the CSV
+#             csv_path = 'Fraud\myapp\data\final_data.csv'
+#             df = pd.read_csv(csv_path)
+
+#             # Filter for engine number
+#             match = df[df['Engine_no'].astype(str) == engine_number]
+
+#             if not match.empty:
+#                 vehicle = {
+#                     'Engine_no': match.iloc[0]['Engine_no'],
+#                     'Body_type': match.iloc[0]['Body_type'],
+#                     'Market_value': match.iloc[0]['Market_value'],
+#                 }
+#                 return render(request, 'myapp/get_estimate.html', {'vehicle': vehicle})
+        
+#         return render(request, 'myapp/get_estimate.html', {'vehicle': None})
+
 
 """ 
 # views.py
@@ -397,3 +464,5 @@ def document_scan_view(request):
 
     return render(request, 'document_scan.html')
  """
+ 
+ 

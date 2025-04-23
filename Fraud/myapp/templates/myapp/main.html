@@ -2,256 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Detectra - Auto Insurance Fraud Detection</title>
+  <title>Detectra - Smarter Vehicle Insurance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    .card {
-      background-color: #fff;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.08);
-      padding: 20px;
-      margin-bottom: 30px;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-      display: none;
-    }
-    .card.visible {
-      display: block;
-    }
-    .top-section {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
-    .logo-title {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-    .logo-title img {
-      height: 40px;
-    }
-    .label {
-      font-weight: bold;
-      color: #444;
-    }
-    .value {
-      font-weight: bold;
-      color: #007bff;
-    }
-    .price-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-    }
-    .price {
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-    }
-    .check-button {
-      background-color: #ff4d58;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .features {
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      color: #28a745;
-      font-size: 14px;
-    }
-    .features div::before {
-      content: "\2714";
-      color: #28a745;
-      margin-right: 8px;
-    }
-    .see-more {
-      text-align: center;
-      margin-top: 30px;
-    }
-    .see-more button {
-      background-color: white;
-      color: #007bff;
-      padding: 10px 20px;
-      border: 2px solid #007bff;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-  </style>
 </head>
-<body class="bg-blue-50">
+<body class="bg-gray-50">
 
 <!-- Navigation -->
-<nav class="bg-white px-8 py-4 flex justify-between items-center shadow-md rounded-b-md mb-8">
+<nav class="bg-white shadow-md px-6 py-4 flex justify-between items-center">
   <div class="text-2xl font-bold text-blue-800">Detectra</div>
   <div>
-    <a href="{% url 'login' %}" class="text-blue-800 font-semibold hover:text-red-600 transition">Login</a>
+    <a href="{% url 'login' %}" class="text-blue-700 font-semibold hover:text-red-600 transition">Login</a>
   </div>
 </nav>
 
-<!-- Main Section -->
-<div class="max-w-5xl mx-auto px-4">
-
-  <!-- Insurance Card -->
-  <div class="bg-white shadow-md rounded-lg p-8 mb-10 text-center">
-    <h1 class="text-3xl font-bold text-gray-800 mb-2">Car Insurance</h1>
-    <p class="text-lg text-gray-600 mb-4">Car insurance starting from <span class="text-blue-700 font-semibold">₹6/day*</span></p>
-
-    <div class="flex justify-center text-sm text-gray-500 space-x-4 steps mb-4">
-      <span>Car No.</span>
-      <span>Select Plan</span>
-      <span>Policy Issued</span>
-    </div>
-
-    <input type="text" placeholder="Your car number ex: DL-12-AB-2345"
-           class="w-full border border-gray-300 rounded-lg px-4 py-3 text-base mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-    <button class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg text-lg font-medium transition">Check Prices</button>
-
-    <p class="text-xs text-gray-500 mt-4">
-      By clicking, you agree to our <a href="#" class="text-blue-600 hover:underline">Terms</a> & <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>.
+<!-- 🔥 New Hero Section -->
+<section class="bg-gradient-to-br from-blue-50 to-blue-200 py-16 px-6 text-center">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+      Stay Ahead of Insurance Scams.<br /> Check Smarter with Detectra.
+    </h1>
+    <p class="mt-4 text-lg text-blue-800">
+      Fast. Accurate. Transparent pricing & policy lookup made easy.
     </p>
+    <a href="{% url 'login' %}" class="mt-6 inline-block bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 text-lg">Login to Your Dashboard</a>
   </div>
+</section>
 
-</div>
-
-<!-- Info Section (OUTSIDE CONTAINER) -->
-<div class="max-w-5xl mx-auto px-4 mb-10">
-  <h2 class="text-2xl font-bold text-gray-800 mb-4">What is Car Insurance?</h2>
-  <p class="text-gray-700 mb-4">Once you’ve secured the car of your dreams, the next step is to get car insurance from a reliable provider. Think of it as a safety net for your beloved ride and the loved ones who will use it. Car insurance is a contract between an insurer and you to protect you from accidents, theft, or natural calamities.</p>
-  <p class="text-gray-700 mb-4">According to the Motor Vehicles Act of 1988, every car owner must have at least a third-party insurance policy. You could also choose comprehensive insurance plans providing wider protection.</p>
-  <p class="text-gray-700 mb-6">Today, getting car insurance or renewing it has become very easy. You can find many online options, but we help you find the best value without breaking your bank.</p>
-</div>
-
-<!-- Top Plans Section -->
-<div class="max-w-5xl mx-auto px-4">
-  <h2 class="text-2xl text-center font-bold text-gray-800 mb-6">Top Car Insurance Plans</h2>
-  <div id="plans-container"></div>
-  <div class="see-more">
-    <button onclick="showMorePlans()">See More Plans ▼</button>
+<!-- Estimate Section -->
+<section class="bg-white py-14 px-6 shadow-inner">
+  <h2 class="text-2xl font-bold text-center mb-6">Get The Market Price Estimate</h2>
+  <div class="max-w-xl mx-auto">
+    <form action="{% url 'get_estimate' %}" method="POST" class="bg-blue-50 p-6 rounded-xl shadow-md">
+      {% csrf_token %}
+      <label class="block mb-3 font-semibold text-gray-700">Enter Engine Number</label>
+      <input type="text" name="engine_no" placeholder="e.g. VLMXVU50VDVGJ1777" required class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">Check Prices</button>
+    </form>
   </div>
-</div>
+</section>
 
-<!-- Key Features Section (OUTSIDE CONTAINER) -->
-<div class="max-w-5xl mx-auto px-4 mt-12 mb-12">
-  <h2 class="text-2xl font-bold text-gray-800 mb-4" style="text-align:center">Key Features of a Car Insurance Policy</h2>
-  <ul class="list-disc pl-6 text-gray-700 space-y-2">
-    <li><strong>Financial Protection Against Damages:</strong> Covers repair and replacement costs when your car is damaged due to accidents, theft, fire, vandalism, or natural calamities, reducing your out-of-pocket expenses.</li>
-    <li><strong>Third-Party Liability Coverage:</strong>  Legally required to drive in India, it protects you from financial and legal obligations if your car injures someone, damages their vehicle or their property.</li>
-    <li><strong>Personal Accident Cover:</strong> Financial Provides financial support if the owner-driver faces injury, disability, or death due to an accident, helping cover medical bills and loss of income.</li>
-    <li><strong>No Claim Bonus (NCB):</strong> Helps reduce your cost of renewal for having no claims made during the policy term, helping you save money over time.</li>
-    <li><strong>Cashless Repairs:</strong> Allows you to get your car repaired at network garages without paying upfront, with the insurer settling costs directly with the repair centre.</li>
-  </ul>
-</div>
+<!-- ⭐ Why Choose Us Section -->
+<section class="py-14 px-6 max-w-6xl mx-auto">
+  <h2 class="text-2xl font-bold text-center mb-8">Why Choose Detectra?</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">🔐 Transparent Pricing</h3>
+      <p class="text-gray-600 text-sm">Instant pricing from top insurers based on your actual vehicle info.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">🚗 Real-Time Verification</h3>
+      <p class="text-gray-600 text-sm">Smart system cross-checks policy data instantly to flag inconsistencies.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">📱 Simple & Seamless</h3>
+      <p class="text-gray-600 text-sm">Clean dashboard for quick lookup and policy monitoring on any device.</p>
+    </div>
+  </div>
+</section>
 
-<!-- Plans Script -->
-<script>
-  const plansData = [
-    {
-      name: "Hdfc Ergo Car Insurance",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/9/9f/HDFC_ERGO_logo.png",
-      garages: "8000+",
-      settled: "100%",
-      claims: "UNLIMITED",
-      price: "₹ 2881",
-      features: ["Maximum Cashless Garages", "24x7 Roadside Assistance", "Over Night Vehicle Repairs", "Quick Claim Settlement"]
-    },
-    {
-      name: "United India Car Insurance",
-      logo: "https://upload.wikimedia.org/wikipedia/en/f/f6/United_India_Insurance_Company_Logo.png",
-      garages: "3,100",
-      settled: "95%",
-      claims: "UNLIMITED",
-      price: "₹ 2396",
-      features: ["Towing Assistance (For Accidents)", "PSU Provider", "Coverage Outside India", "Quick Claim Settlement"]
-    },
-    {
-      name: "Icici Lombard Car Insurance",
-      logo: "https://logos-world.net/wp-content/uploads/2021/09/ICICI-Bank-Logo.png",
-      garages: "6100+",
-      settled: "96.75%",
-      claims: "UNLIMITED",
-      price: "₹ 1000",
-      features: ["Towing Assistance (Till 50 kms)", "6-Month Repair Warranty", "Free Pick-Up and Drop", "Quick Claim Settlement"]
-    },
-    {
-      name: "New India Car Insurance",
-      logo: "https://companieslogo.com/img/orig/NEWINDIA.BO_BIG.D-00a5d81c.png",
-      garages: "3,000",
-      settled: "92%",
-      claims: "UNLIMITED",
-      price: "₹ 2494",
-      features: ["Towing Assistance till Rs 1,500", "Coverage Outside India", "PSU Provider", "Quick Claim Settlement"]
-    },
-    {
-      name: "Royal Sundaram Car Insurance",
-      logo: "https://companieslogo.com/img/orig/ROYALSUND.BO_BIG.D-bc69d243.png",
-      garages: "7600+",
-      settled: "99%",
-      claims: "UNLIMITED",
-      price: "₹ 3151",
-      features: ["Zero Depreciation till 7 years", "6-Month Repair Warranty", "Free Pick-Up and Drop", "Quick Claim Settlement"]
-    },
-    {
-      name: "Future Generali Car Insurance",
-      logo: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7d/Future_Generali_Logo.svg/2560px-Future_Generali_Logo.svg.png",
-      garages: "3,500",
-      settled: "96%",
-      claims: "UNLIMITED",
-      price: "₹ 2094",
-      features: ["Towing Assistance (Accidents)", "Priority Car Repairs", "24x7 Roadside Assistance", "Quick Claim Settlement"]
-    }
-  ];
-
-  const plansContainer = document.getElementById("plans-container");
-  let shownPlans = 0;
-
-  function renderPlan(plan) {
-    const card = document.createElement("div");
-    card.className = "card visible";
-    card.innerHTML = `
-      <div class="top-section">
-        <div class="logo-title">
-          <img src="${plan.logo}" alt="Logo">
-          <div><div class="label">${plan.name}</div></div>
-        </div>
-        <div><div class="label">Cashless Garages</div><div class="value">${plan.garages}</div></div>
-        <div><div class="label">Claims Settled</div><div class="value">${plan.settled}</div></div>
-        <div><div class="label">Comprehensive Claims</div><div class="value">${plan.claims}</div></div>
-      </div>
-      <div class="price-section">
-        <div><div class="label">Starting From</div><div class="price">${plan.price}</div></div>
-        <button class="check-button">Check Prices</button>
-      </div>
-      <div class="features">${plan.features.map(f => `<div>${f}</div>`).join('')}</div>
-    `;
-    plansContainer.appendChild(card);
-  }
-
-  function showMorePlans() {
-    const next = plansData.slice(shownPlans, shownPlans + 2);
-    next.forEach(renderPlan);
-    shownPlans += next.length;
-    if (shownPlans >= plansData.length) {
-      document.querySelector('.see-more').style.display = 'none';
-    }
-  }
-
-  showMorePlans();
-</script>
+<!-- Footer -->
+<footer class="text-center py-6 text-sm text-gray-600 bg-white mt-12 border-t">
+  &copy; 2025 Detectra. Built for safe driving & smart insurance.
+</footer>
 
 </body>
 </html>
