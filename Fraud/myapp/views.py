@@ -367,8 +367,7 @@ def predict_fraud(request):
 
 
 
-def document_scan(request):
-    return render(request, 'myapp/document_scan.html')
+
 
 import os
 import pandas as pd
@@ -409,60 +408,92 @@ def get_estimate(request):
     return render(request, 'myapp/get_estimate.html', {'error': 'Invalid request'})
 
 
-# import pandas as pd
-# from django.shortcuts import render
-# from django.conf import settings
-# import os
-
-# def get_estimate(request):
-#     if request.method == 'GET':
-#         engine_number = request.GET.get('Engine_no', '').strip()
-
-#         if engine_number:
-#             # Load the CSV
-#             csv_path = 'Fraud\myapp\data\final_data.csv'
-#             df = pd.read_csv(csv_path)
-
-#             # Filter for engine number
-#             match = df[df['Engine_no'].astype(str) == engine_number]
-
-#             if not match.empty:
-#                 vehicle = {
-#                     'Engine_no': match.iloc[0]['Engine_no'],
-#                     'Body_type': match.iloc[0]['Body_type'],
-#                     'Market_value': match.iloc[0]['Market_value'],
-#                 }
-#                 return render(request, 'myapp/get_estimate.html', {'vehicle': vehicle})
-        
-#         return render(request, 'myapp/get_estimate.html', {'vehicle': None})
-
-
-""" 
-# views.py
 import os
 import joblib
-from django.shortcuts import render
-from .utils import extract_text_from_files, calculate_fraud_score
+import torch
+import numpy as np
+from django.conf import settings
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from transformers import BertTokenizer, BertModel
+from .utils import extract_text_from_files
 
-model = os.path.join(settings.MODEL_DIR, 'unstructured_model.pkl.pkl')
+# Load the IsolationForest model
+MODEL_PATH = os.path.join(settings.MODEL_DIR,'unstructured_model.pkl')
+model = joblib.load(MODEL_PATH)
+
+# Load the BERT model and tokenizer
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+bert_model = BertModel.from_pretrained('bert-base-uncased')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+bert_model.to(device)
+
+def get_bert_embedding(text):
+    """
+    Converts a string of text to a BERT embedding (mean pooled).
+    """
+    inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
+    inputs = {key: val.to(device) for key, val in inputs.items()}
+    with torch.no_grad():
+        outputs = bert_model(**inputs)
+    embedding = outputs.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
+    return embedding
 
 def document_scan_view(request):
-    if request.method == "POST":
+    context = {}
+    if request.method == 'POST':
         files = request.FILES.getlist('documents')
+        if not files:
+            messages.error(request, 'Please upload at least one document.')
+            return redirect('document_scan')
+
         texts = extract_text_from_files(files)
+        combined = ' '.join(texts)
 
-        combined_text = " ".join(texts)
-        prediction = model.predict([combined_text])[0]
-        probability = model.predict_proba([combined_text])[0][1] * 100
+        try:
+            embedding = get_bert_embedding(combined).reshape(1, -1)
+            pred = model.predict(embedding)[0]  # -1 = fraud, 1 = normal
+            score = model.decision_function(embedding)[0]  # anomaly score
 
-        context = {
-            'prediction': "Fraud" if prediction == 1 else "Genuine",
-            'probability': round(probability, 2),
-            'details': f"Top keywords, analysis info here...",
-        }
-        return render(request, 'document_scan.html', context)
+            context = {
+                'prediction': 'Fraud' if pred == -1 else 'Genuine',
+                'probability': round(score, 2),
+                'reason': 'Detected patterns associated with fraud.' if pred == -1 else 'No significant fraud indicators detected.'
+            }
 
-    return render(request, 'document_scan.html')
- """
+        except Exception as e:
+            messages.error(request, f'Prediction error: {e}')
+            return redirect('document_scan')
+
+    return render(request, 'myapp/document_scan.html', context)
+
+
+
+# import os
+# import joblib
+# from django.shortcuts import render
+# from .utils import extract_text_from_files, extract_text_from_image,extract_text_from_pdf
+
+# model = os.path.join(settings.MODEL_DIR, 'unstructured_model.pkl.pkl')
+
+# def document_scan_view(request):
+#     if request.method == "POST":
+#         files = request.FILES.getlist('documents')
+#         file_type = files.content_type.lower() 
+#         texts = extract_text_from_files(file_type)
+
+#         combined_text = " ".join(texts)
+#         prediction = model.predict([combined_text])[0]
+#         probability = model.predict_proba([combined_text])[0][1] * 100
+
+#         context = {
+#             'prediction': "Fraud" if prediction == 1 else "Genuine",
+#             'probability': round(probability, 2),
+#             'details': f"Top keywords, analysis info here...",
+#         }
+#         return render(request, 'document_scan.html', context)
+
+#     return render(request, 'document_scan.html')
+
  
  

@@ -1,4 +1,73 @@
-<!-- templates/document_scan.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Document Fraud Detection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-2xl bg-white rounded-xl shadow-md p-8 space-y-6">
+    <h1 class="text-3xl font-bold text-center">Scan & Verify Document Authenticity</h1>
+
+    <!-- Upload Form -->
+    <form
+      id="scan-form"
+      method="POST"
+      action="{% url 'document_scan' %}"
+      enctype="multipart/form-data"
+      class="space-y-4"
+    >
+      {% csrf_token %}
+      <label class="block">
+        <span class="text-gray-700">Select documents (PDF, JPG, PNG):</span>
+        <input
+          id="file-input"
+          type="file"
+          name="documents"
+          accept=".pdf,.jpg,.jpeg,.png"
+          multiple
+          required
+          class="mt-1 block w-full text-gray-700 border border-gray-300 rounded-md p-2"
+        />
+      </label>
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+      >
+        Scan for Fraud
+      </button>
+    </form>
+
+    <!-- Messages -->
+    {% if messages %}
+      <div class="mt-4">
+        {% for message in messages %}
+          <p class="text-red-500">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Results -->
+    {% if prediction %}
+      <div class="mt-6 bg-gray-100 p-4 rounded-md space-y-2">
+        <h2 class="text-xl font-semibold">
+          Status:
+          <span class="{% if prediction == 'Fraud' %}text-red-600{% else %}text-green-600{% endif %}">
+            {{ prediction }}
+          </span>
+        </h2>
+        <p>Probability Score: <strong>{{ probability }}%</strong></p>
+        <p>Reason: <strong>{{ reason }}</strong></p>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
+
+
+
+{% comment %} <!-- templates/document_scan.html -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -104,4 +173,4 @@
         });
     </script>
 </body>
-</html>
+</html> {% endcomment %}

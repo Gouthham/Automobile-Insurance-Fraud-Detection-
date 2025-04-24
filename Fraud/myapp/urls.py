@@ -11,7 +11,7 @@ urlpatterns = [
     path('fraud-form/<str:policy_no>/', views.fraud_form, name='fraud_form'),
     path('predict-fraud/', views.predict_fraud, name='predict_fraud'),
     path('logout/', LogoutView.as_view(next_page='main_page'), name='logout'),
-    path('document-scan/', views.document_scan, name='document_scan'),
+    path('document-scan/', views.document_scan_view, name='document_scan'),
     path('profile/', views.profile, name='profile'),
 
 
