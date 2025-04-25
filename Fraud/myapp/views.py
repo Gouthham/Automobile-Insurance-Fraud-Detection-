@@ -368,24 +368,28 @@ def predict_fraud(request):
 
 
 
-
 import os
 import pandas as pd
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import render
 
 def get_estimate(request):
     if request.method == 'POST':
-        engine_no = request.POST.get('engine_no', '').strip().upper()
+        import json
+        try:
+            data = json.loads(request.body)
+            engine_no = data.get('engine_no', '').strip().upper()
+        except Exception:
+            return JsonResponse({'error': 'Invalid request data'}, status=400)
 
         if not engine_no:
-            return render(request, 'myapp/get_estimate.html', {'error': 'Engine number cannot be empty.'})
+            return JsonResponse({'error': 'Engine number cannot be empty.'})
 
         try:
-            # Adjust path based on your file's actual location
             csv_path = os.path.join(settings.BASE_DIR, 'myapp', 'data', 'final_data.csv')
             if not os.path.exists(csv_path):
-                return render(request, 'myapp/get_estimate.html', {'error': 'CSV file not found.'})
+                return JsonResponse({'error': 'CSV file not found.'})
             
             df = pd.read_csv(csv_path)
             df['Engine_no'] = df['Engine_no'].astype(str).str.upper()
@@ -393,19 +397,59 @@ def get_estimate(request):
             vehicle = df[df['Engine_no'] == engine_no]
 
             if not vehicle.empty:
-                data = {
-                    'name': vehicle.iloc[0]['Name'],
-                    'body_type': vehicle.iloc[0]['Body_type'],
-                    'market_price': vehicle.iloc[0]['Market_value']
+                result = {
+                    'name': str(vehicle.iloc[0]['Name']),
+                    'body_type': str(vehicle.iloc[0]['Body_type']),
+                    'market_price': float(vehicle.iloc[0]['Market_value'])
                 }
-                return render(request, 'myapp/get_estimate.html', {'data': data})
+                return JsonResponse(result)
             else:
-                return render(request, 'myapp/get_estimate.html', {'error': 'No vehicle found for the given engine number.'})
+                return JsonResponse({'error': 'No vehicle found for the given engine number.'})
 
         except Exception as e:
-            return render(request, 'myapp/get_estimate.html', {'error': f'Error: {str(e)}'})
+            return JsonResponse({'error': f'Error: {str(e)}'})
 
-    return render(request, 'myapp/get_estimate.html', {'error': 'Invalid request'})
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+
+
+# import os
+# import pandas as pd
+# from django.conf import settings
+# from django.shortcuts import render
+
+# def get_estimate(request):
+#     if request.method == 'POST':
+#         engine_no = request.POST.get('engine_no', '').strip().upper()
+
+#         if not engine_no:
+#             return render(request, 'myapp/get_estimate.html', {'error': 'Engine number cannot be empty.'})
+
+#         try:
+#             # Adjust path based on your file's actual location
+#             csv_path = os.path.join(settings.BASE_DIR, 'myapp', 'data', 'final_data.csv')
+#             if not os.path.exists(csv_path):
+#                 return render(request, 'myapp/get_estimate.html', {'error': 'CSV file not found.'})
+            
+#             df = pd.read_csv(csv_path)
+#             df['Engine_no'] = df['Engine_no'].astype(str).str.upper()
+
+#             vehicle = df[df['Engine_no'] == engine_no]
+
+#             if not vehicle.empty:
+#                 data = {
+#                     'name': vehicle.iloc[0]['Name'],
+#                     'body_type': vehicle.iloc[0]['Body_type'],
+#                     'market_price': vehicle.iloc[0]['Market_value']
+#                 }
+#                 return render(request, 'myapp/main.html', {'data': data})
+#             else:
+#                 return render(request, 'myapp/main.html', {'error': 'No vehicle found for the given engine number.'})
+
+#         except Exception as e:
+#             return render(request, 'myapp/main.html', {'error': f'Error: {str(e)}'})
+
+#     return render(request, 'myapp/main.html', {'error': 'Invalid request'})
 
 
 import os

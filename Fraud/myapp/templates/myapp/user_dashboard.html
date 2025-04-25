@@ -1,4 +1,5 @@
 {% extends 'myapp/admin_base.html' %}
+
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
@@ -8,12 +9,12 @@
 <!-- Divider -->
 <hr class="my-4">
 
-<!-- Policy Status and Fraud Check -->
+<!-- Policy Due Date and Fraud Check -->
 <div class="bg-white p-4 rounded shadow-md">
     <h2 class="text-lg font-semibold text-gray-800 mb-3">📝 Policy Details</h2>
     <ul class="text-gray-700 space-y-2">
-        <li><strong>Vehicle:</strong> {{ candidate_vehicle }}</li>
-        <li><strong>Status:</strong> {{ candidate_status }}</li>
+        <li><strong>Vehicle:</strong> {{ candidate_body_type }}</li>
+        <li><strong>Policy End Date:</strong> {{ candidate_policy_End_date }}</li>
         <li>
             <strong>Fraud Check:</strong>
             {% if is_fraud %}
@@ -25,9 +26,15 @@
     </ul>
 </div>
 
+<!-- Insurance Information -->
+<div class="mt-6 bg-white p-4 rounded shadow-md">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">📋 Insurance Information</h3>
+    <p class="text-gray-700">Your insurance policy covers the full range of damages for the vehicle listed. Make sure to renew the policy before the due date to maintain continuous coverage.</p>
+</div>
+
 <!-- Optional: Add report or support section -->
 <div class="mt-6 bg-gray-50 p-4 rounded">
     <h3 class="text-md font-semibold text-gray-800 mb-2">Need Help?</h3>
     <p class="text-sm text-gray-600">If you think there's a mistake or want to report something, please contact support.</p>
 </div>
-{% endblock %}
+{% endblock %}
