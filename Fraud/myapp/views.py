@@ -539,5 +539,5 @@ def document_scan_view(request):
 
 #     return render(request, 'document_scan.html')
 
- 
+
  
