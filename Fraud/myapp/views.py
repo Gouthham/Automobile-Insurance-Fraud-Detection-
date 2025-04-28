@@ -35,9 +35,11 @@ def search_form(request):
             return render(request, 'myapp/result.html', {'result': result})
         else:
             print("🔹 No matching data found.")
-            return HttpResponse("No matching data found.")
+            # Instead of HttpResponse, send back to search_form.html with error
+            return render(request, 'myapp/search_form.html', {'error': 'No matching policy number found. Please try again.'})
 
     return render(request, 'myapp/search_form.html')
+
 from django.shortcuts import render
 from .models import Candidate
 import os
@@ -190,17 +192,48 @@ def admin_dashboard(request):
     
     return render(request, 'myapp/admin_dashboard.html', {'result': result})
 
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import Candidate  # Assuming you have a Candidate model
 
 def user_dashboard(request):
+    # Retrieve candidate data from the session
     name = request.session.get('candidate_name')
     policy = request.session.get('candidate_policy_no')
+    
+    # If name and policy are present in the session, fetch more details
     if name and policy:
-        return render(request, 'myapp/user_dashboard.html', {
-            'candidate_name': name,
-            'candidate_policy_no': policy
-        })
-    return redirect('login')
+        try:
+            # Retrieve the Candidate instance based on the policy number or name
+            candidate = Candidate.objects.get(policy_no=policy)
+
+            # Pass candidate details to the template
+            return render(request, 'myapp/user_dashboard.html', {
+                'candidate_name': candidate.name,
+                'candidate_policy_no': candidate.policy_no,
+                'candidate_body_type': candidate.body_type,  # Assuming `body_type` is a field
+                'candidate_policy_End_date': candidate.policy_End_date,  # Assuming `policy_end_date` is a field
+                  # Assuming `is_fraud` is a boolean field in your model
+            })
+
+        except Candidate.DoesNotExist:
+            # If the candidate with the given policy number doesn't exist, redirect to login
+            return redirect('login')
+    else:
+        # If name or policy is not found in the session, redirect to login
+        return redirect('login')
+
+
+# from django.contrib.auth.decorators import login_required
+
+# def user_dashboard(request):
+#     name = request.session.get('candidate_name')
+#     policy = request.session.get('candidate_policy_no')
+#     if name and policy:
+#         return render(request, 'myapp/user_dashboard.html', {
+#             'candidate_name': name,
+#             'candidate_policy_no': policy
+#         })
+#     return redirect('login')
 
 
 from django.contrib.auth import authenticate, login

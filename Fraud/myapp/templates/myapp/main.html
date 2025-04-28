@@ -5,6 +5,334 @@
   <title>Detectra - Smarter Vehicle Insurance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- Font Awesome for social media icons -->
+  <style>
+    #chatbotToggle {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 50;
+    }
+    #chatbotWindow {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      width: 300px;
+      max-height: 400px;
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 50;
+      overflow: hidden;
+    }
+    .question-btn {
+      background-color: #f3f4f6;
+      border: 1px solid #d1d5db;
+      padding: 8px 16px;
+      border-radius: 0.5rem;
+      margin: 5px 0;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .question-btn:hover {
+      background-color: #e5e7eb;
+    }
+    .hero-slide {
+      display: none;
+    }
+    .hero-slide.active {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Navigation -->
+<nav class="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+  <div class="text-2xl font-bold text-blue-800">Detectra</div>
+  <div>
+    <a href="{% url 'login' %}" class="text-blue-700 font-semibold hover:text-red-600 transition">Login</a>
+  </div>
+</nav>
+
+<!-- Hero Section with Slider -->
+<section class="relative bg-gradient-to-br from-blue-50 to-blue-200 py-16 px-6 text-center">
+  <div class="max-w-3xl mx-auto">
+    <div id="heroSlider" class="relative">
+      <div class="hero-slide active">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+          Stay Ahead of Insurance Scams.<br /> Check Smarter with Detectra.
+        </h1>
+        <p class="mt-4 text-lg text-blue-800">
+          Fast. Accurate. Transparent pricing & policy lookup made easy.
+        </p>
+      </div>
+      <div class="hero-slide">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+          Instant Pricing.<br /> Real-Time Verification.
+        </h1>
+        <p class="mt-4 text-lg text-blue-800">
+          Protect your vehicle with data-driven estimates and policy checks.
+        </p>
+      </div>
+      <div class="hero-slide">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+          Simple & Seamless.<br /> Get Your Estimate Now.
+        </h1>
+        <p class="mt-4 text-lg text-blue-800">
+          Quickly check your vehicle's value with a few simple inputs.
+        </p>
+      </div>
+    </div>
+    <a href="{% url 'login' %}" class="mt-6 inline-block bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 text-lg">Login to Your Dashboard</a>
+  </div>
+</section>
+
+<!-- Estimate Section -->
+<section class="bg-white py-14 px-6 shadow-inner">
+  <h2 class="text-2xl font-bold text-center mb-6">Get The Market Price Estimate</h2>
+  <div class="max-w-xl mx-auto">
+    <form id="estimateForm" class="bg-blue-50 p-6 rounded-xl shadow-md">
+      {% csrf_token %}
+      <label class="block mb-3 font-semibold text-gray-700">Enter Engine Number</label>
+      <input type="text" id="engine_no" name="engine_no" placeholder="e.g. VLMXVU50VDVGJ1777" required class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">Check Prices</button>
+    </form>
+
+    <!-- Result Box -->
+    <div id="estimateResult" class="mt-6 hidden bg-white p-4 border rounded-lg shadow text-center"></div>
+  </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="py-14 px-6 max-w-6xl mx-auto">
+  <h2 class="text-2xl font-bold text-center mb-8">Why Choose Detectra?</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">🔐 Transparent Pricing</h3>
+      <p class="text-gray-600 text-sm">Instant pricing from top insurers based on your actual vehicle info.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">🚗 Real-Time Verification</h3>
+      <p class="text-gray-600 text-sm">Smart system cross-checks policy data instantly to flag inconsistencies.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">📱 Simple & Seamless</h3>
+      <p class="text-gray-600 text-sm">Clean dashboard for quick lookup and policy monitoring on any device.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-blue-700 text-white py-12">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Social Media Links -->
+      <div>
+        <h3 class="text-xl font-semibold mb-4">Follow Us</h3>
+        <div class="flex space-x-6">
+          <a href="https://www.instagram.com" target="_blank" class="text-white hover:text-gray-200">
+            <i class="fab fa-instagram text-3xl"></i>
+          </a>
+          <a href="https://www.twitter.com" target="_blank" class="text-white hover:text-gray-200">
+            <i class="fab fa-twitter text-3xl"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Contact Us -->
+      <div>
+        <h3 class="text-xl font-semibold mb-4">Contact Us</h3>
+        <p class="text-sm">Have any questions or concerns? Reach out to us:</p>
+        <ul class="mt-4 text-sm space-y-2">
+          <li><a href="mailto:support@detectra.com" class="text-white hover:text-gray-200">support@detectra.com</a></li>
+          <li><a href="tel:+1234567890" class="text-white hover:text-gray-200">+1 (234) 567-890</a></li>
+        </ul>
+      </div>
+
+      <!-- Newsletter Signup -->
+      <div>
+        <h3 class="text-xl font-semibold mb-4">Subscribe to our Newsletter</h3>
+        <form class="flex space-x-2">
+          <input type="email" class="px-4 py-2 text-sm rounded-lg border focus:outline-none" placeholder="Your email" required>
+          <button type="submit" class="bg-yellow-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-yellow-600">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Bottom -->
+  <div class="text-center mt-12 text-sm">
+    <p>&copy; 2025 Detectra. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- Chatbot Popup Notification -->
+<div id="chatPopup" class="fixed bottom-28 right-32 bg-white border border-gray-300 rounded-lg shadow-lg p-3 text-sm text-gray-800 z-50 hidden">
+  👋 Hey! I'm <strong>Detectra Assistant</strong>. Need help?
+</div>
+
+<!-- Chatbot Button -->
+<button id="chatbotToggle" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg">
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712039.png" alt="Chatbot" class="w-6 h-6">
+</button>
+
+<!-- Chatbot Window -->
+<div id="chatbotWindow">
+  <div class="p-4 border-b bg-blue-600 text-white font-semibold">Detectra Assistant</div>
+  <div class="p-4 text-sm text-gray-700" id="chatMessages">
+    <p>Hello! Ask me anything about vehicle insurance fraud or price estimates.</p>
+  </div>
+  <div class="p-4">
+    <div class="text-sm">
+      <p class="font-semibold text-gray-800">Click a question:</p>
+      <button class="question-btn" onclick="displayAnswer('login_to_find_out')">When is my next policy due date?</button>
+      <button class="question-btn" onclick="displayAnswer('check_price')">What is my vehicle's market price?</button>
+      <button class="question-btn" onclick="displayAnswer('loogin')">What is password to login?</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+// Hero Section Slider
+let currentSlide = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const totalSlides = slides.length;
+
+function showSlide() {
+  slides.forEach((slide, index) => {
+    slide.classList.remove('active');
+    if (index === currentSlide) {
+      slide.classList.add('active');
+    }
+  });
+  currentSlide = (currentSlide + 1) % totalSlides;
+}
+
+setInterval(showSlide, 5000); // Change slide every 5 seconds
+showSlide(); // Initialize the first slide
+
+// Toggle chatbot window
+const chatbotToggle = document.getElementById("chatbotToggle");
+const chatbotWindow = document.getElementById("chatbotWindow");
+const chatMessages = document.getElementById("chatMessages");
+const chatPopup = document.getElementById("chatPopup");
+
+chatbotToggle.addEventListener("click", () => {
+  chatMessages.innerHTML = '<p>Hello! Ask me anything about vehicle insurance fraud or price estimates.</p>';
+  chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
+  chatPopup.classList.add('hidden');  // Hide "Hi, I'm Detectra Assistant" message when chatbot is clicked
+});
+
+function displayAnswer(answerType) {
+  chatMessages.innerHTML = '';
+  let answer = '';
+
+  switch (answerType) {
+    case 'login_to_find_out':
+      answer = 'Please log in to find out your next policy due date.';
+      break;
+    case 'check_price':
+      answer = 'Please check the vehicle\'s price using the "Get Estimate" form above.';
+      break;
+    case 'loogin':
+      answer = 'The password is your Policy Number.';
+      break;
+    default:
+      answer = 'I\'m sorry, I didn\'t understand that. Please ask another question.';
+  }
+
+  chatMessages.innerHTML = `<p class="text-gray-700">Detectra Assistant: ${answer}</p>`;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Handle estimate form
+const form = document.getElementById('estimateForm');
+const resultBox = document.getElementById('estimateResult');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const engineNo = document.getElementById('engine_no').value.trim();
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // Validation
+  if (engineNo === '') {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Engine Number',
+      text: 'Please enter the Engine Number.',
+    });
+    return;
+  }
+
+  const engineFormat = /^[A-Z0-9]{17}$/;
+  if (!engineFormat.test(engineNo)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid Format',
+      text: 'Please enter exactly 17 uppercase letters/numbers.',
+    });
+    return;
+  }
+
+  resultBox.innerHTML = "Checking... 🔍";
+  resultBox.classList.remove('hidden');
+
+  const response = await fetch("{% url 'get_estimate' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({ engine_no: engineNo })
+  });
+
+  const data = await response.json();
+
+  if (data.error) {
+    resultBox.innerHTML = `<p class="text-red-600 font-semibold">${data.error}</p>`;
+  } else {
+    resultBox.innerHTML = `
+      <h3 class="text-xl font-bold text-blue-700 mb-2">Vehicle Estimate</h3>
+      <p class="text-gray-700"><strong>Name:</strong> ${data.name}</p>
+      <p class="text-gray-700"><strong>Body Type:</strong> ${data.body_type}</p>
+      <p class="text-gray-700"><strong>Market Price:</strong> ₹${data.market_price.toLocaleString()}</p>
+    `;
+  }
+
+  // Auto-scroll to result
+  resultBox.scrollIntoView({ behavior: "smooth" });
+});
+
+// Chatbot greeting popup (only appear after 2s and stay)
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    chatPopup.classList.remove('hidden');
+  }, 2000);
+});
+</script>
+
+</body>
+</html>
+
+
+{% comment %} 
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Detectra - Smarter Vehicle Insurance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert -->
   <style>
     #chatbotToggle {
       position: fixed;
@@ -103,116 +431,138 @@
   &copy; 2025 Detectra. Built for safe driving & smart insurance.
 </footer>
 
-<!-- 🟦 Chatbot Popup Notification -->
+<!-- Chatbot Popup Notification -->
 <div id="chatPopup" class="fixed bottom-28 right-32 bg-white border border-gray-300 rounded-lg shadow-lg p-3 text-sm text-gray-800 z-50 hidden">
   👋 Hey! I'm <strong>Detectra Assistant</strong>. Need help?
 </div>
 
-<!-- 🔘 Chatbot Button -->
+<!-- Chatbot Button -->
 <button id="chatbotToggle" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg">
   <img src="https://cdn-icons-png.flaticon.com/512/4712/4712039.png" alt="Chatbot" class="w-6 h-6">
 </button>
 
-<!-- 💬 Chatbot Window -->
+<!-- Chatbot Window -->
 <div id="chatbotWindow">
   <div class="p-4 border-b bg-blue-600 text-white font-semibold">Detectra Assistant</div>
   <div class="p-4 text-sm text-gray-700" id="chatMessages">
     <p>Hello! Ask me anything about vehicle insurance fraud or price estimates.</p>
   </div>
   <div class="p-4">
-    <!-- Predefined Questions -->
     <div class="text-sm">
       <p class="font-semibold text-gray-800">Click a question:</p>
       <button class="question-btn" onclick="displayAnswer('login_to_find_out')">When is my next policy due date?</button>
       <button class="question-btn" onclick="displayAnswer('check_price')">What is my vehicle's market price?</button>
-      <button class="question-btn" onclick="displayAnswer('insurance_status')">How do I know if my vehicle is insured?</button>
+      <button class="question-btn" onclick="displayAnswer('loogin')">What is password to login?</button>
     </div>
-  </div>
-  <div class="p-2 border-t">
-    <input type="text" id="chatInput" placeholder="Type your question..." class="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
   </div>
 </div>
 
 <!-- Scripts -->
 <script>
-  // Toggle chatbot window
-  const chatbotToggle = document.getElementById("chatbotToggle");
-  const chatbotWindow = document.getElementById("chatbotWindow");
-  const chatMessages = document.getElementById("chatMessages");
+// Toggle chatbot window
+const chatbotToggle = document.getElementById("chatbotToggle");
+const chatbotWindow = document.getElementById("chatbotWindow");
+const chatMessages = document.getElementById("chatMessages");
+const chatPopup = document.getElementById("chatPopup");
 
-  chatbotToggle.addEventListener("click", () => {
-    chatMessages.innerHTML = '<p>Hello! Ask me anything about vehicle insurance fraud or price estimates.</p>';
-    chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
-  });
+chatbotToggle.addEventListener("click", () => {
+  chatMessages.innerHTML = '<p>Hello! Ask me anything about vehicle insurance fraud or price estimates.</p>';
+  chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
+  chatPopup.classList.add('hidden');  // Hide "Hi, I'm Detectra Assistant" message when chatbot is clicked
+});
 
-  function displayAnswer(answerType) {
-    chatMessages.innerHTML = ''; 
-    let answer = '';
+function displayAnswer(answerType) {
+  chatMessages.innerHTML = '';
+  let answer = '';
 
-    switch (answerType) {
-      case 'login_to_find_out':
-        answer = 'Please log in to find out your next policy due date.';
-        break;
-      case 'check_price':
-        answer = 'Please check the vehicle\'s price using the "Get Estimate" form above.';
-        break;
-      case 'insurance_status':
-        answer = 'You can check insurance details through your dashboard once you log in.';
-        break;
-      default:
-        answer = 'I\'m sorry, I didn\'t understand that. Please ask another question.';
-    }
-
-    chatMessages.innerHTML = `<p class="text-gray-700">Detectra Assistant: ${answer}</p>`;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+  switch (answerType) {
+    case 'login_to_find_out':
+      answer = 'Please log in to find out your next policy due date.';
+      break;
+    case 'check_price':
+      answer = 'Please check the vehicle\'s price using the "Get Estimate" form above.';
+      break;
+    case 'loogin':
+      answer = 'The password is your Policy Number.';
+      break;
+    default:
+      answer = 'I\'m sorry, I didn\'t understand that. Please ask another question.';
   }
 
-  // Handle estimate AJAX
-  const form = document.getElementById('estimateForm');
-  const resultBox = document.getElementById('estimateResult');
+  chatMessages.innerHTML = `<p class="text-gray-700">Detectra Assistant: ${answer}</p>`;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const engineNo = document.getElementById('engine_no').value;
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+// Handle estimate form
+const form = document.getElementById('estimateForm');
+const resultBox = document.getElementById('estimateResult');
 
-    resultBox.innerHTML = "Checking... 🔍";
-    resultBox.classList.remove('hidden');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const engineNo = document.getElementById('engine_no').value.trim();
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    const response = await fetch("{% url 'get_estimate' %}", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken
-      },
-      body: JSON.stringify({ engine_no: engineNo })
+  // Validation
+  if (engineNo === '') {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Engine Number',
+      text: 'Please enter the Engine Number.',
     });
+    return;
+  }
 
-    const data = await response.json();
-    
-    if (data.error) {
-      resultBox.innerHTML = `<p class="text-red-600 font-semibold">${data.error}</p>`;
-    } else {
-      resultBox.innerHTML = `
-        <h3 class="text-xl font-bold text-blue-700 mb-2">Vehicle Estimate</h3>
-        <p class="text-gray-700"><strong>Name:</strong> ${data.name}</p>
-        <p class="text-gray-700"><strong>Body Type:</strong> ${data.body_type}</p>
-        <p class="text-gray-700"><strong>Market Price:</strong> ₹${data.market_price.toLocaleString()}</p>
-      `;
-    }
+  const engineFormat = /^[A-Z0-9]{17}$/;
+  if (!engineFormat.test(engineNo)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid Format',
+      text: 'Please enter exactly 17 uppercase letters/numbers.',
+    });
+    return;
+  }
+
+  resultBox.innerHTML = "Checking... 🔍";
+  resultBox.classList.remove('hidden');
+
+  const response = await fetch("{% url 'get_estimate' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({ engine_no: engineNo })
   });
 
-  // Chatbot greeting popup
-  window.addEventListener('load', () => {
-    const chatPopup = document.getElementById("chatPopup");
-    setTimeout(() => {
-      chatPopup.classList.remove('hidden');
-      setTimeout(() => {
-        chatPopup.classList.add('hidden');
-      }, 5000);
-    }, 2000);
-  });
+  const data = await response.json();
+
+  if (data.error) {
+    resultBox.innerHTML = `<p class="text-red-600 font-semibold">${data.error}</p>`;
+  } else {
+    resultBox.innerHTML = `
+      <h3 class="text-xl font-bold text-blue-700 mb-2">Vehicle Estimate</h3>
+      <p class="text-gray-700"><strong>Name:</strong> ${data.name}</p>
+      <p class="text-gray-700"><strong>Body Type:</strong> ${data.body_type}</p>
+      <p class="text-gray-700"><strong>Market Price:</strong> ₹${data.market_price.toLocaleString()}</p>
+    `;
+  }
+
+  // Auto-scroll to result
+  resultBox.scrollIntoView({ behavior: "smooth" });
+});
+
+// Chatbot greeting popup (only appear after 2s and stay)
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    chatPopup.classList.remove('hidden');
+  }, 2000);
+});
 </script>
 
 </body>
 </html>
+
+
+
+ {% endcomment %}
