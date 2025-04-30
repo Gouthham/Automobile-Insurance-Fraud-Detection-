@@ -1,40 +1,275 @@
+<head>
+    <!-- Other head content -->
+
+    <!-- Add this line to include Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
 {% extends 'myapp/admin_base.html' %}
 
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
-<div class="text-xl text-blue-700 font-semibold">Welcome {{ candidate_name }}!</div>
-<p class="text-gray-700 mt-2">Policy Number: {{ candidate_policy_no }}</p>
+<div class="text-xl text-blue-700 font-semibold text-center">Welcome {{ candidate_name }}!</div>
+<p class="text-gray-700 mt-2 text-center">Policy Number: {{ candidate_policy_no }}</p>
 
 <!-- Divider -->
 <hr class="my-4">
 
 <!-- Policy Due Date and Fraud Check -->
-<div class="bg-white p-4 rounded shadow-md">
-    <h2 class="text-lg font-semibold text-gray-800 mb-3">📝 Policy Details</h2>
+<div class="bg-white p-4 rounded shadow-md mx-auto my-4 max-w-lg">
+    <h2 class="text-lg font-semibold text-gray-800 mb-3 text-center">📝 Policy Details</h2>
     <ul class="text-gray-700 space-y-2">
         <li><strong>Vehicle:</strong> {{ candidate_body_type }}</li>
         <li><strong>Policy End Date:</strong> {{ candidate_policy_End_date }}</li>
-        <li>
-            <strong>Fraud Check:</strong>
-            {% if is_fraud %}
-                <span class="text-red-600 font-bold">⚠ Fraud Detected</span>
-            {% else %}
-                <span class="text-green-600 font-medium">✔ No Fraud Detected</span>
-            {% endif %}
-        </li>
     </ul>
 </div>
 
-<!-- Insurance Information -->
-<div class="mt-6 bg-white p-4 rounded shadow-md">
-    <h3 class="text-lg font-semibold text-gray-800 mb-3">📋 Insurance Information</h3>
-    <p class="text-gray-700">Your insurance policy covers the full range of damages for the vehicle listed. Make sure to renew the policy before the due date to maintain continuous coverage.</p>
+<!-- General Insurance Information -->
+<div class="mt-6 bg-white p-4 rounded shadow-md mx-auto my-4 max-w-lg">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3 text-center">📄 General Insurance Information</h3>
+    <p class="text-gray-700">Your insurance policy provides comprehensive coverage for a wide range of damages, including accidents, theft, and natural disasters. To ensure continuous coverage, make sure to renew your policy before the due date.</p>
+    <ul class="text-gray-700 space-y-2">
+        <li><strong>Coverage Type:</strong> Comprehensive</li>
+        <li><strong>Policy Validity:</strong> Until {{ candidate_policy_End_date }}</li>
+        <li><strong>Claim Process:</strong> In case of damage or loss, please contact us immediately for the claims process.</li>
+    </ul>
 </div>
 
 <!-- Optional: Add report or support section -->
-<div class="mt-6 bg-gray-50 p-4 rounded">
+<div class="mt-6 bg-gray-50 p-4 rounded mx-auto my-4 max-w-lg">
     <h3 class="text-md font-semibold text-gray-800 mb-2">Need Help?</h3>
     <p class="text-sm text-gray-600">If you think there's a mistake or want to report something, please contact support.</p>
 </div>
+
+<!-- Footer -->
+<footer class="bg-blue-700 text-white py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Social Media Links -->
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Follow Us</h3>
+          <div class="flex space-x-6">
+            <a href="https://www.instagram.com" target="_blank" class="text-white hover:text-gray-200">
+              <i class="fab fa-instagram text-3xl"></i>
+            </a>
+            <a href="https://www.twitter.com" target="_blank" class="text-white hover:text-gray-200">
+              <i class="fab fa-twitter text-3xl"></i>
+            </a>
+          </div>
+        </div>
+  
+        <!-- Contact Us -->
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Contact Us</h3>
+          <p class="text-sm">Have any questions or concerns? Reach out to us:</p>
+          <ul class="mt-4 text-sm space-y-2">
+            <li><a href="mailto:support@detectra.com" class="text-white hover:text-gray-200">support@detectra.com</a></li>
+            <li><a href="tel:+1234567890" class="text-white hover:text-gray-200">080 2615 7268</a></li>
+          </ul>
+        </div>
+  
+        <!-- Newsletter Signup -->
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Subscribe to our Newsletter</h3>
+          <form class="flex space-x-2">
+            <input type="email" class="px-4 py-2 text-sm rounded-lg border focus:outline-none" placeholder="Your email" required>
+            <button type="submit" class="bg-yellow-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-yellow-600">
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Footer Bottom -->
+    <div class="text-center mt-12 text-sm">
+      <p>&copy; 2025 Detectra. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Chatbot Button and Window -->
+<button id="chatbot-toggle" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg focus:outline-none">
+    💬
+</button>
+
+<div id="chatbot-window" class="fixed bottom-20 right-6 w-80 bg-white rounded-lg shadow-lg p-4 hidden">
+    <div id="chatbot-greeting" class="text-blue-700 font-semibold mb-2">
+        Hi {{ candidate_name }}! How can I help you?
+    </div>
+    <div id="chatbot-qs" class="hidden">
+        <ul class="space-y-2 text-sm text-gray-700">
+            <li><strong>Q:</strong> How do I renew my policy?<br><strong>A:</strong> You can renew it using policy bazaar website or get in touch with your car insurance provider.</li>
+            <li><strong>Q:</strong> What documents are required?<br><strong>A:</strong> Only your Vehicle Registration Certificate (RC) and a valid ID proof.</li>
+            <li><strong>Q:</strong> How do I contact support?<br><strong>A:</strong> Email us at support@detectra.com.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Script to control chatbot behavior -->
+<script>
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.getElementById('chatbot-window').classList.remove('hidden');
+        }, 2000); // 2 seconds delay
+    });
+
+    var isGreetingVisible = true;
+
+    document.getElementById('chatbot-toggle').addEventListener('click', function() {
+        var greeting = document.getElementById('chatbot-greeting');
+        var qs = document.getElementById('chatbot-qs');
+
+        if (isGreetingVisible) {
+            // Hide greeting, show questions
+            greeting.classList.add('hidden');
+            qs.classList.remove('hidden');
+            isGreetingVisible = false;
+        } else {
+            // Show greeting, hide questions
+            greeting.classList.remove('hidden');
+            qs.classList.add('hidden');
+            isGreetingVisible = true;
+        }
+    });
+</script>
+
 {% endblock %}
+
+<!-- Include Font Awesome for social media icons -->
+
+
+
+{% comment %} {% extends 'myapp/admin_base.html' %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="text-xl text-blue-700 font-semibold text-center">Welcome {{ candidate_name }}!</div>
+<p class="text-gray-700 mt-2 text-center">Policy Number: {{ candidate_policy_no }}</p>
+
+<!-- Divider -->
+<hr class="my-4">
+
+<!-- Policy Due Date and Fraud Check -->
+<div class="bg-white p-4 rounded shadow-md mx-auto my-4 max-w-lg">
+    <h2 class="text-lg font-semibold text-gray-800 mb-3 text-center">📝 Policy Details</h2>
+    <ul class="text-gray-700 space-y-2">
+        <li><strong>Vehicle:</strong> {{ candidate_body_type }}</li>
+        <li><strong>Policy End Date:</strong> {{ candidate_policy_End_date }}</li>
+    </ul>
+</div>
+
+<!-- General Insurance Information -->
+<div class="mt-6 bg-white p-4 rounded shadow-md mx-auto my-4 max-w-lg">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3 text-center">📄 General Insurance Information</h3>
+    <p class="text-gray-700">Your insurance policy provides comprehensive coverage for a wide range of damages, including accidents, theft, and natural disasters. To ensure continuous coverage, make sure to renew your policy before the due date.</p>
+    <ul class="text-gray-700 space-y-2">
+        <li><strong>Coverage Type:</strong> Comprehensive</li>
+        <li><strong>Policy Validity:</strong> Until {{ candidate_policy_End_date }}</li>
+        <li><strong>Claim Process:</strong> In case of damage or loss, please contact us immediately for the claims process.</li>
+    </ul>
+</div>
+
+
+
+<!-- Optional: Add report or support section -->
+<div class="mt-6 bg-gray-50 p-4 rounded mx-auto my-4 max-w-lg">
+    <h3 class="text-md font-semibold text-gray-800 mb-2">Need Help?</h3>
+    <p class="text-sm text-gray-600">If you think there's a mistake or want to report something, please contact support.</p>
+</div>
+
+<footer class="bg-blue-700 text-white py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Social Media Links -->
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Follow Us</h3>
+          <div class="flex space-x-6">
+            <a href="https://www.instagram.com" target="_blank" class="text-white hover:text-gray-200">
+              <i class="fab fa-instagram text-3xl"></i>
+            </a>
+            <a href="https://www.twitter.com" target="_blank" class="text-white hover:text-gray-200">
+              <i class="fab fa-twitter text-3xl"></i>
+            </a>
+          </div>
+        </div>
+  
+        <!-- Contact Us -->
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Contact Us</h3>
+          <p class="text-sm">Have any questions or concerns? Reach out to us:</p>
+          <ul class="mt-4 text-sm space-y-2">
+            <li><a href="mailto:support@detectra.com" class="text-white hover:text-gray-200">support@detectra.com</a></li>
+            <li><a href="tel:+1234567890" class="text-white hover:text-gray-200">080 2615 7268</a></li>
+          </ul>
+        </div>
+  
+        <!-- Newsletter Signup -->
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Subscribe to our Newsletter</h3>
+          <form class="flex space-x-2">
+            <input type="email" class="px-4 py-2 text-sm rounded-lg border focus:outline-none" placeholder="Your email" required>
+            <button type="submit" class="bg-yellow-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-yellow-600">
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Footer Bottom -->
+    <div class="text-center mt-12 text-sm">
+      <p>&copy; 2025 Detectra. All rights reserved.</p>
+    </div>
+  </footer>
+
+<!-- Chatbot Button and Window -->
+<button id="chatbot-toggle" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg focus:outline-none">
+    💬
+</button>
+
+<div id="chatbot-window" class="fixed bottom-20 right-6 w-80 bg-white rounded-lg shadow-lg p-4 hidden">
+    <div id="chatbot-greeting" class="text-blue-700 font-semibold mb-2">
+        Hi {{ candidate_name }}! How can I help you?
+    </div>
+    <div id="chatbot-qs" class="hidden">
+        <ul class="space-y-2 text-sm text-gray-700">
+            <li><strong>Q:</strong> How do I renew my policy?<br><strong>A:</strong> You can renew it using policy bazaar website or get in touch with your car insurance provider.</li>
+            <li><strong>Q:</strong> What documents are required?<br><strong>A:</strong> Only your Vehicle Registration Certificate (RC) and a valid ID proof.</li>
+            <li><strong>Q:</strong> How do I contact support?<br><strong>A:</strong> Email us at support@detectra.com.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Script to control chatbot behavior -->
+<script>
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.getElementById('chatbot-window').classList.remove('hidden');
+        }, 2000); // 2 seconds delay
+    });
+
+    var isGreetingVisible = true;
+
+    document.getElementById('chatbot-toggle').addEventListener('click', function() {
+        var greeting = document.getElementById('chatbot-greeting');
+        var qs = document.getElementById('chatbot-qs');
+
+        if (isGreetingVisible) {
+            // Hide greeting, show questions
+            greeting.classList.add('hidden');
+            qs.classList.remove('hidden');
+            isGreetingVisible = false;
+        } else {
+            // Show greeting, hide questions
+            greeting.classList.remove('hidden');
+            qs.classList.add('hidden');
+            isGreetingVisible = true;
+        }
+    });
+</script>
+{% endblock %}
+
+ {% endcomment %}
