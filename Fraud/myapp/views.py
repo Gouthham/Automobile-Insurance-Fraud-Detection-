@@ -367,31 +367,49 @@ def predict_fraud(request):
         fraud_prob = np.clip((1 - anomaly_score) * 100, 0, 100)
 
         status = "Legitimate"
-        explanation = None
+        explanation = "No anomalies detected. Claim appears to be legitimate."
+
         if input_dict["Claim_amt"] > input_dict["Price_of_vehicle"] and input_dict["Claim_amt"] > input_dict["Market_value"]:
             status = "Fraud"
-            explanation = "Claim exceeds vehicle and market value."
+            explanation = "Claim amount is unusually high it exceeds both the vehicle's purchase price and its current market value. This is a strong indicator of possible fraud."
+
         elif input_dict["Type_of_Incident"].lower() == "theft" and input_dict["Claim_amt"] == input_dict["Market_value"]:
             status = "Verification Needed"
-            explanation = "Claim equals market value."
+            explanation = "Claim amount is equal to the market value of the vehicle. Since the incident is theft, this may be valid but requires additional verification to rule out overstatement."
+
         elif input_dict["Driving_license_valid"] == 0:
             status = "Fraud"
-            explanation = "Invalid driving license."
+            explanation = "Driver does not hold a valid driving license at the time of the incident. This violates policy conditions and indicates potential fraud."
+
         elif "Drinking" in input_dict and input_dict["Drinking"] == 1:
             status = "Fraud"
-            explanation = "Drinking involved."
-        elif prediction[0] == -1:
-            status = "Fraud"
-            explanation = "Anomaly detected."
+            explanation = "Alcohol consumption was reported during the incident. Claims involving drinking are considered high-risk and potentially fraudulent."
 
+
+        from collections import Counter
+        import json
+
+# Tokenize and count all non-zero TF-IDF keywords
+        keyword_scores = {feature_names[i]: tfidf_scores[i] for i in range(len(tfidf_scores)) if tfidf_scores[i] > 0}
+        sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)[:10]  # top 10
+
+# Prepare data for pie chart (labels and their corresponding scores)
+        keyword_labels = [kw[0] for kw in sorted_keywords]
+        keyword_values = [round(kw[1] * 100, 2) for kw in sorted_keywords]  # scale scores for visual effect
+
+
+        raw_anomaly_score = anomaly_score[0] 
         # Final Result
         result = {
             "prediction": status,
             "fraud_probability": f"{fraud_prob[0]:.2f}",
             "explanation": explanation or "No specific red flag.",
+            "anomaly_score": f"{raw_anomaly_score:.4f}",
             "nlp_fraud_score": f"{desc_score:.2f}",
             "nlp_keywords": top_keywords,
             "nlp_similarity": f"{similarity:.2f}",
+            "keyword_labels": json.dumps(keyword_labels),
+            "keyword_values": json.dumps(keyword_values),
         }
 
         return render(request, 'myapp/fraud_result.html', {'result': result})
@@ -484,7 +502,6 @@ def get_estimate(request):
 
 #     return render(request, 'myapp/main.html', {'error': 'Invalid request'})
 
-
 import os
 import joblib
 import torch
@@ -496,7 +513,7 @@ from transformers import BertTokenizer, BertModel
 from .utils import extract_text_from_files
 
 # Load the IsolationForest model
-MODEL_PATH = os.path.join(settings.MODEL_DIR,'unstructured_model.pkl')
+MODEL_PATH = os.path.join(settings.MODEL_DIR, 'unstructured_svm_model.pkl')
 model = joblib.load(MODEL_PATH)
 
 # Load the BERT model and tokenizer
@@ -516,25 +533,28 @@ def get_bert_embedding(text):
     embedding = outputs.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
     return embedding
 
-def document_scan_view(request):
+def scan_view(request):
     context = {}
     if request.method == 'POST':
         files = request.FILES.getlist('documents')
-        if not files:
-            messages.error(request, 'Please upload at least one document.')
+        police_reports = request.FILES.getlist('police_reports')
+        all_files = files + police_reports
+
+        if not all_files:
+            messages.error(request, 'Please upload at least one document or police report.')
             return redirect('document_scan')
 
-        texts = extract_text_from_files(files)
+        # Extract and combine text from all uploaded files
+        texts = extract_text_from_files(all_files)
         combined = ' '.join(texts)
 
         try:
             embedding = get_bert_embedding(combined).reshape(1, -1)
-            pred = model.predict(embedding)[0]  # -1 = fraud, 1 = normal
-            score = model.decision_function(embedding)[0]  # anomaly score
+            pred = model.predict(embedding)[0]  # -1 = fraud, 1 = genuine
+            score = model.decision_function(embedding)[0]
 
             context = {
                 'prediction': 'Fraud' if pred == -1 else 'Genuine',
-                'probability': round(score, 2),
                 'reason': 'Detected patterns associated with fraud.' if pred == -1 else 'No significant fraud indicators detected.'
             }
 
@@ -548,29 +568,137 @@ def document_scan_view(request):
 
 # import os
 # import joblib
-# from django.shortcuts import render
-# from .utils import extract_text_from_files, extract_text_from_image,extract_text_from_pdf
+# import torch
+# import numpy as np
+# from django.conf import settings
+# from django.contrib import messages
+# from django.shortcuts import render, redirect
+# from transformers import BertTokenizer, BertModel
+# from .utils import extract_text_from_files
 
-# model = os.path.join(settings.MODEL_DIR, 'unstructured_model.pkl.pkl')
+# # Load the IsolationForest model
+# MODEL_PATH = os.path.join(settings.MODEL_DIR, 'unstructured_svm_model.pkl')
+# model = joblib.load(MODEL_PATH)
+
+# # Load the BERT model and tokenizer
+# tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+# bert_model = BertModel.from_pretrained('bert-base-uncased')
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# bert_model.to(device)
+
+# def get_bert_embedding(text):
+#     """
+#     Converts a string of text to a BERT embedding (mean pooled).
+#     """
+#     inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
+#     inputs = {key: val.to(device) for key, val in inputs.items()}
+#     with torch.no_grad():
+#         outputs = bert_model(**inputs)
+#     embedding = outputs.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
+#     return embedding
+
+# def scan_view(request):
+#     context = {}
+#     if request.method == 'POST':
+#         # Determine which form was submitted
+#         if 'scan_document' in request.POST:
+#             files = request.FILES.getlist('documents')
+#             scan_type = 'Document'
+#         elif 'scan_police_report' in request.POST:
+#             files = request.FILES.getlist('police_reports')
+#             scan_type = 'Police Report'
+#         else:
+#             messages.error(request, 'Invalid form submission.')
+#             return redirect('document_scan')
+
+#         if not files:
+#             messages.error(request, f'Please upload at least one {scan_type.lower()}.')
+#             return redirect('document_scan')
+
+#         texts = extract_text_from_files(files)
+#         combined = ' '.join(texts)
+
+#         try:
+#             embedding = get_bert_embedding(combined).reshape(1, -1)
+#             pred = model.predict(embedding)[0]  # -1 = fraud, 1 = normal
+#             score = model.decision_function(embedding)[0]  # anomaly score
+
+#             context = {
+#                 'scan_type': scan_type,
+#                 'prediction': 'Fraud' if pred == -1 else 'Genuine',
+#                 'probability': round(score, 2),
+#                 'reason': 'Detected patterns associated with fraud.' if pred == -1 else 'No significant fraud indicators detected.'
+#             }
+
+#         except Exception as e:
+#             messages.error(request, f'Prediction error: {e}')
+#             return redirect('document_scan')
+
+#     return render(request, 'myapp/document_scan.html', context)
+
+
+
+# import os
+# import joblib
+# import torch
+# import numpy as np
+# from django.conf import settings
+# from django.contrib import messages
+# from django.shortcuts import render, redirect
+# from transformers import BertTokenizer, BertModel
+# from .utils import extract_text_from_files
+
+# # Load the IsolationForest model
+# MODEL_PATH = os.path.join(settings.MODEL_DIR,'unstructured_model.pkl')
+# model = joblib.load(MODEL_PATH)
+
+# # Load the BERT model and tokenizer
+# tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+# bert_model = BertModel.from_pretrained('bert-base-uncased')
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# bert_model.to(device)
+
+# def get_bert_embedding(text):
+#     """
+#     Converts a string of text to a BERT embedding (mean pooled).
+#     """
+#     inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
+#     inputs = {key: val.to(device) for key, val in inputs.items()}
+#     with torch.no_grad():
+#         outputs = bert_model(**inputs)
+#     embedding = outputs.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
+#     return embedding
 
 # def document_scan_view(request):
-#     if request.method == "POST":
+#     context = {}
+#     if request.method == 'POST':
 #         files = request.FILES.getlist('documents')
-#         file_type = files.content_type.lower() 
-#         texts = extract_text_from_files(file_type)
+#         if not files:
+#             messages.error(request, 'Please upload at least one document.')
+#             return redirect('document_scan')
 
-#         combined_text = " ".join(texts)
-#         prediction = model.predict([combined_text])[0]
-#         probability = model.predict_proba([combined_text])[0][1] * 100
+#         texts = extract_text_from_files(files)
+#         combined = ' '.join(texts)
 
-#         context = {
-#             'prediction': "Fraud" if prediction == 1 else "Genuine",
-#             'probability': round(probability, 2),
-#             'details': f"Top keywords, analysis info here...",
-#         }
-#         return render(request, 'document_scan.html', context)
+#         try:
+#             embedding = get_bert_embedding(combined).reshape(1, -1)
+#             pred = model.predict(embedding)[0]  # -1 = fraud, 1 = normal
+#             score = model.decision_function(embedding)[0]  # anomaly score
 
-#     return render(request, 'document_scan.html')
+#             context = {
+#                 'prediction': 'Fraud' if pred == -1 else 'Genuine',
+#                 'probability': round(score, 2),
+#                 'reason': 'Detected patterns associated with fraud.' if pred == -1 else 'No significant fraud indicators detected.'
+#             }
+
+#         except Exception as e:
+#             messages.error(request, f'Prediction error: {e}')
+#             return redirect('document_scan')
+
+#     return render(request, 'myapp/document_scan.html', context)
+
+
+
 
 
  
