@@ -1,16 +1,22 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Document Fraud Detection</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    function togglePoliceReportInput() {
+      const checkbox = document.getElementById('has-police-report');
+      const reportInputDiv = document.getElementById('police-report-section');
+      reportInputDiv.style.display = checkbox.checked ? 'block' : 'none';
+    }
+  </script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
-  <div class="w-full max-w-2xl bg-white rounded-xl shadow-md p-8 space-y-6">
+  <div class="w-full max-w-2xl bg-white rounded-xl shadow-md p-8 space-y-8">
     <h1 class="text-3xl font-bold text-center">Scan & Verify Document Authenticity</h1>
 
-    <!-- Upload Form -->
     <form
       id="scan-form"
       method="POST"
@@ -19,10 +25,10 @@
       class="space-y-4"
     >
       {% csrf_token %}
+      
       <label class="block">
-        <span class="text-gray-700">Select documents (PDF, JPG, PNG):</span>
+        <span class="text-gray-700">Upload Document (PDF, JPG, PNG):</span>
         <input
-          id="file-input"
           type="file"
           name="documents"
           accept=".pdf,.jpg,.jpeg,.png"
@@ -31,6 +37,31 @@
           class="mt-1 block w-full text-gray-700 border border-gray-300 rounded-md p-2"
         />
       </label>
+
+      <label class="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="has-police-report"
+          name="has_police_report"
+          onchange="togglePoliceReportInput()"
+          class="rounded"
+        />
+        <span class="text-gray-700">I have a police report to upload</span>
+      </label>
+
+      <div id="police-report-section" style="display: none;">
+        <label class="block">
+          <span class="text-gray-700">Upload Police Report (PDF, JPG, PNG):</span>
+          <input
+            type="file"
+            name="police_reports"
+            accept=".pdf,.jpg,.jpeg,.png"
+            multiple
+            class="mt-1 block w-full text-gray-700 border border-gray-300 rounded-md p-2"
+          />
+        </label>
+      </div>
+
       <button
         type="submit"
         class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
@@ -39,7 +70,6 @@
       </button>
     </form>
 
-    <!-- Messages -->
     {% if messages %}
       <div class="mt-4">
         {% for message in messages %}
@@ -48,7 +78,6 @@
       </div>
     {% endif %}
 
-    <!-- Results -->
     {% if prediction %}
       <div class="mt-6 bg-gray-100 p-4 rounded-md space-y-2">
         <h2 class="text-xl font-semibold">
@@ -57,7 +86,6 @@
             {{ prediction }}
           </span>
         </h2>
-        <p>Probability Score: <strong>{{ probability }}%</strong></p>
         <p>Reason: <strong>{{ reason }}</strong></p>
       </div>
     {% endif %}
@@ -67,110 +95,3 @@
 
 
 
-{% comment %} <!-- templates/document_scan.html -->
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Scan and Verify Document Authenticity</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-start p-6">
-    
-    <!-- Title and Subtitle -->
-    <div class="text-center my-8">
-        <h1 class="text-4xl font-bold text-gray-800">Scan and Verify Document Authenticity</h1>
-        <p class="text-lg text-gray-600 mt-2">Upload insurance-related documents to detect potential fraud in seconds using AI-powered analysis.</p>
-    </div>
-
-    <!-- Upload Box -->
-    <form method="POST" enctype="multipart/form-data" class="w-full max-w-3xl bg-white rounded-xl shadow-md p-6 space-y-4" id="upload-form">
-        {% csrf_token %}
-        
-        <div class="border-4 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition" id="drop-area">
-            <div class="text-5xl mb-2">📄</div>
-            <p class="text-gray-700">Drag & Drop your documents here</p>
-            <p class="text-sm text-gray-500">or Click to Browse Files</p>
-            <input type="file" name="documents" multiple accept=".pdf,.jpg,.png" class="hidden" id="fileElem">
-        </div>
-
-        <!-- Info Box -->
-        <div class="text-sm text-gray-500 text-center">
-            Supported file types: <span class="font-medium">PDF, JPG, PNG</span> | Max size: <span class="font-medium">10MB</span>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="w-full bg-gray-200 rounded-full h-3 hidden" id="progressContainer">
-            <div class="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-in-out" id="progressBar" style="width: 0%;"></div>
-        </div>
-
-        <!-- Scan Button -->
-        <div class="text-center">
-            <button type="submit" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition">
-                Ready to scan for fraud? 🚀 Hit the button!
-            </button>
-        </div>
-    </form>
-
-    <!-- Result Section -->
-    {% if prediction %}
-    <div class="w-full max-w-3xl mt-6 bg-white shadow-md rounded-xl p-6 space-y-4">
-        <h2 class="text-xl font-bold text-gray-800">Document Status: 
-            {% if prediction == 'Fraud' %}
-                <span class="text-red-600">🚨 Fraud</span>
-            {% else %}
-                <span class="text-green-600">✅ Genuine</span>
-            {% endif %}
-        </h2>
-
-        <p class="text-lg">Fraud Probability Score: <span class="font-semibold">{{ probability }}%</span></p>
-
-        <button class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition" onclick="toggleDetails()">View Detailed Report</button>
-
-        <div id="reportDetails" class="hidden mt-4 text-sm text-gray-700">
-            {{ details }}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Loading animation (you can customize this further) -->
-    {% if scanning %}
-    <div class="flex items-center space-x-2 mt-6 text-gray-600">
-        <svg class="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-        </svg>
-        <p>Scanning document with AI... please wait</p>
-    </div>
-    {% endif %}
-
-    <script>
-        // Click-to-browse fallback
-        document.getElementById("drop-area").addEventListener("click", () => {
-            document.getElementById("fileElem").click();
-        });
-
-        // Toggle report
-        function toggleDetails() {
-            const el = document.getElementById("reportDetails");
-            el.classList.toggle("hidden");
-        }
-
-        // Progress bar simulation (hook to real AJAX upload if needed)
-        const form = document.getElementById('upload-form');
-        form.addEventListener('submit', (e) => {
-            const progress = document.getElementById('progressContainer');
-            const bar = document.getElementById('progressBar');
-            progress.classList.remove('hidden');
-            bar.style.width = '0%';
-            let pct = 0;
-            const interval = setInterval(() => {
-                if (pct >= 100) return clearInterval(interval);
-                pct += 10;
-                bar.style.width = pct + '%';
-            }, 200);
-        });
-    </script>
-</body>
-</html> {% endcomment %}

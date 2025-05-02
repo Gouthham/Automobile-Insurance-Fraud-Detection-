@@ -223,18 +223,6 @@ def user_dashboard(request):
         return redirect('login')
 
 
-# from django.contrib.auth.decorators import login_required
-
-# def user_dashboard(request):
-#     name = request.session.get('candidate_name')
-#     policy = request.session.get('candidate_policy_no')
-#     if name and policy:
-#         return render(request, 'myapp/user_dashboard.html', {
-#             'candidate_name': name,
-#             'candidate_policy_no': policy
-#         })
-#     return redirect('login')
-
 
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
@@ -367,31 +355,49 @@ def predict_fraud(request):
         fraud_prob = np.clip((1 - anomaly_score) * 100, 0, 100)
 
         status = "Legitimate"
-        explanation = None
+        explanation = "No anomalies detected. Claim appears to be legitimate."
+
         if input_dict["Claim_amt"] > input_dict["Price_of_vehicle"] and input_dict["Claim_amt"] > input_dict["Market_value"]:
             status = "Fraud"
-            explanation = "Claim exceeds vehicle and market value."
+            explanation = "Claim amount is unusually high it exceeds both the vehicle's purchase price and its current market value. This is a strong indicator of possible fraud."
+
         elif input_dict["Type_of_Incident"].lower() == "theft" and input_dict["Claim_amt"] == input_dict["Market_value"]:
             status = "Verification Needed"
-            explanation = "Claim equals market value."
+            explanation = "Claim amount is equal to the market value of the vehicle. Since the incident is theft, this may be valid but requires additional verification to rule out overstatement."
+
         elif input_dict["Driving_license_valid"] == 0:
             status = "Fraud"
-            explanation = "Invalid driving license."
+            explanation = "Driver does not hold a valid driving license at the time of the incident. This violates policy conditions and indicates potential fraud."
+
         elif "Drinking" in input_dict and input_dict["Drinking"] == 1:
             status = "Fraud"
-            explanation = "Drinking involved."
-        elif prediction[0] == -1:
-            status = "Fraud"
-            explanation = "Anomaly detected."
+            explanation = "Alcohol consumption was reported during the incident. Claims involving drinking are considered high-risk and potentially fraudulent."
 
+
+        from collections import Counter
+        import json
+
+# Tokenize and count all non-zero TF-IDF keywords
+        keyword_scores = {feature_names[i]: tfidf_scores[i] for i in range(len(tfidf_scores)) if tfidf_scores[i] > 0}
+        sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)[:10]  # top 10
+
+# Prepare data for pie chart (labels and their corresponding scores)
+        keyword_labels = [kw[0] for kw in sorted_keywords]
+        keyword_values = [round(kw[1] * 100, 2) for kw in sorted_keywords]  # scale scores for visual effect
+
+
+        raw_anomaly_score = anomaly_score[0] 
         # Final Result
         result = {
             "prediction": status,
             "fraud_probability": f"{fraud_prob[0]:.2f}",
             "explanation": explanation or "No specific red flag.",
+            "anomaly_score": f"{raw_anomaly_score:.4f}",
             "nlp_fraud_score": f"{desc_score:.2f}",
             "nlp_keywords": top_keywords,
             "nlp_similarity": f"{similarity:.2f}",
+            "keyword_labels": json.dumps(keyword_labels),
+            "keyword_values": json.dumps(keyword_values),
         }
 
         return render(request, 'myapp/fraud_result.html', {'result': result})
@@ -445,70 +451,43 @@ def get_estimate(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
-
-# import os
-# import pandas as pd
-# from django.conf import settings
-# from django.shortcuts import render
-
-# def get_estimate(request):
-#     if request.method == 'POST':
-#         engine_no = request.POST.get('engine_no', '').strip().upper()
-
-#         if not engine_no:
-#             return render(request, 'myapp/get_estimate.html', {'error': 'Engine number cannot be empty.'})
-
-#         try:
-#             # Adjust path based on your file's actual location
-#             csv_path = os.path.join(settings.BASE_DIR, 'myapp', 'data', 'final_data.csv')
-#             if not os.path.exists(csv_path):
-#                 return render(request, 'myapp/get_estimate.html', {'error': 'CSV file not found.'})
-            
-#             df = pd.read_csv(csv_path)
-#             df['Engine_no'] = df['Engine_no'].astype(str).str.upper()
-
-#             vehicle = df[df['Engine_no'] == engine_no]
-
-#             if not vehicle.empty:
-#                 data = {
-#                     'name': vehicle.iloc[0]['Name'],
-#                     'body_type': vehicle.iloc[0]['Body_type'],
-#                     'market_price': vehicle.iloc[0]['Market_value']
-#                 }
-#                 return render(request, 'myapp/main.html', {'data': data})
-#             else:
-#                 return render(request, 'myapp/main.html', {'error': 'No vehicle found for the given engine number.'})
-
-#         except Exception as e:
-#             return render(request, 'myapp/main.html', {'error': f'Error: {str(e)}'})
-
-#     return render(request, 'myapp/main.html', {'error': 'Invalid request'})
-
-
 import os
 import joblib
 import torch
 import numpy as np
+import re
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from transformers import BertTokenizer, BertModel
+from nltk.corpus import stopwords
+from nltk import download
 from .utils import extract_text_from_files
 
-# Load the IsolationForest model
-MODEL_PATH = os.path.join(settings.MODEL_DIR,'unstructured_model.pkl')
+# Ensure stopwords are available
+download('stopwords')
+english_stopwords = set(stopwords.words('english'))
+
+# Load saved model
+MODEL_PATH = os.path.join(settings.MODEL_DIR, 'unstructured_svm_model.pkl')
 model = joblib.load(MODEL_PATH)
 
-# Load the BERT model and tokenizer
+# Load BERT tokenizer and model
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 bert_model = BertModel.from_pretrained('bert-base-uncased')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 bert_model.to(device)
 
+# Advanced text cleaning function
+def advanced_clean_text(text):
+    text = str(text).lower().strip()
+    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r'[^a-z\s]', '', text)
+    text = " ".join([word for word in text.split() if word not in english_stopwords])
+    return text
+
+# BERT embedding function
 def get_bert_embedding(text):
-    """
-    Converts a string of text to a BERT embedding (mean pooled).
-    """
     inputs = tokenizer(text, return_tensors='pt', truncation=True, max_length=512)
     inputs = {key: val.to(device) for key, val in inputs.items()}
     with torch.no_grad():
@@ -516,26 +495,33 @@ def get_bert_embedding(text):
     embedding = outputs.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
     return embedding
 
-def document_scan_view(request):
+# View function
+def scan_view(request):
     context = {}
     if request.method == 'POST':
         files = request.FILES.getlist('documents')
-        if not files:
-            messages.error(request, 'Please upload at least one document.')
+        police_reports = request.FILES.getlist('police_reports')
+        all_files = files + police_reports
+
+        if not all_files:
+            messages.error(request, 'Please upload at least one document or police report.')
             return redirect('document_scan')
 
-        texts = extract_text_from_files(files)
-        combined = ' '.join(texts)
-
+        # Extract and combine text
         try:
-            embedding = get_bert_embedding(combined).reshape(1, -1)
-            pred = model.predict(embedding)[0]  # -1 = fraud, 1 = normal
-            score = model.decision_function(embedding)[0]  # anomaly score
+            texts = extract_text_from_files(all_files)
+            combined_text = ' '.join(texts)
+            cleaned = advanced_clean_text(combined_text)
+
+            # Get embedding and predict
+            embedding = get_bert_embedding(cleaned).reshape(1, -1)
+            pred = model.predict(embedding)[0]
+            score = model.decision_function(embedding)[0]
 
             context = {
                 'prediction': 'Fraud' if pred == -1 else 'Genuine',
-                'probability': round(score, 2),
-                'reason': 'Detected patterns associated with fraud.' if pred == -1 else 'No significant fraud indicators detected.'
+                'reason': 'Detected patterns associated with fraud.' if pred == -1 else 'No significant fraud indicators detected.',
+                'score': round(score, 4)
             }
 
         except Exception as e:
@@ -543,34 +529,3 @@ def document_scan_view(request):
             return redirect('document_scan')
 
     return render(request, 'myapp/document_scan.html', context)
-
-
-
-# import os
-# import joblib
-# from django.shortcuts import render
-# from .utils import extract_text_from_files, extract_text_from_image,extract_text_from_pdf
-
-# model = os.path.join(settings.MODEL_DIR, 'unstructured_model.pkl.pkl')
-
-# def document_scan_view(request):
-#     if request.method == "POST":
-#         files = request.FILES.getlist('documents')
-#         file_type = files.content_type.lower() 
-#         texts = extract_text_from_files(file_type)
-
-#         combined_text = " ".join(texts)
-#         prediction = model.predict([combined_text])[0]
-#         probability = model.predict_proba([combined_text])[0][1] * 100
-
-#         context = {
-#             'prediction': "Fraud" if prediction == 1 else "Genuine",
-#             'probability': round(probability, 2),
-#             'details': f"Top keywords, analysis info here...",
-#         }
-#         return render(request, 'document_scan.html', context)
-
-#     return render(request, 'document_scan.html')
-
-
- 

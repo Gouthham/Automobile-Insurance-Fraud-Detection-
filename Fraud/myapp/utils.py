@@ -1,3 +1,6 @@
+
+
+
 import os
 import fitz  # PyMuPDF
 import pytesseract
@@ -48,6 +51,9 @@ def extract_text_from_pdf(file):
         os.remove(tmp_path)
 
     return text.strip()
+
+
+
 
 def extract_text_from_image(file):
     """
