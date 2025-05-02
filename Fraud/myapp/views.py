@@ -279,8 +279,18 @@ def extract_text_from_file(file):
             text += ""
     return text.strip()
 
+import os
+import json
+import joblib
+import numpy as np
+import pandas as pd
+from django.conf import settings
+from django.shortcuts import render
+from django.http import HttpResponse
+from sklearn.metrics.pairwise import cosine_similarity
 
 def predict_fraud(request):
+    
     if request.method == 'POST':
         form_data = request.POST
 
@@ -306,7 +316,6 @@ def predict_fraud(request):
         desc_score = np.clip((1 - nlp_model.decision_function(X_desc.toarray())[0]) * 100, 0, 100)
         nlp_pred = nlp_model.predict(X_desc.toarray())[0]
 
-
         # Extract top keywords from TF-IDF
         feature_names = vectorizer.get_feature_names_out()
         tfidf_scores = X_desc.toarray()[0]
@@ -317,8 +326,7 @@ def predict_fraud(request):
         X_police = vectorizer.transform([police_text])
         similarity = cosine_similarity(X_desc.toarray(), X_police.toarray())[0][0] * 100
 
-
-        # Existing structured model logic
+        # Extract structured fields
         input_dict = {
             'Type_of_Incident': form_data.get('type_of_incident'),
             'Body_type': form_data.get('body_type'),
@@ -332,6 +340,7 @@ def predict_fraud(request):
             'Vehicle_age': int(form_data.get('vehicle_age', 0)),
             'Price_of_vehicle': float(form_data.get('price_of_vehicle', 0)),
             'Market_value': float(form_data.get('market_value', 0)),
+            'Damage_severity': form_data.get('damage_severity', ''),
         }
 
         if input_dict["Type_of_Incident"].lower() == "theft":
@@ -339,6 +348,7 @@ def predict_fraud(request):
             input_dict.pop("Eyewitness", None)
             input_dict.pop("Past_claims", None)
 
+        # Load model and scaler
         model_path = os.path.join(settings.MODEL_DIR, 'structured_model.pkl')
         scaler_path = os.path.join(settings.MODEL_DIR, 'scaler.pkl')
         iso_forest = joblib.load(model_path)
@@ -357,9 +367,17 @@ def predict_fraud(request):
         status = "Legitimate"
         explanation = "No anomalies detected. Claim appears to be legitimate."
 
-        if input_dict["Claim_amt"] > input_dict["Price_of_vehicle"] and input_dict["Claim_amt"] > input_dict["Market_value"]:
+        # --- CUSTOM RULE: Damage severity high, claim amount too low ---
+        if input_dict['Damage_severity'].lower() in ['critical', 'significant'] and input_dict['Claim_amt'] < 0.5 * input_dict['Market_value']:
             status = "Fraud"
-            explanation = "Claim amount is unusually high it exceeds both the vehicle's purchase price and its current market value. This is a strong indicator of possible fraud."
+            explanation = (
+                f"Reported damage is '{input_dict['Damage_severity']}' but the claimed amount is unusually low, "
+                f"below 50% of the market value. This inconsistency is a strong indicator of potential fraud."
+            )
+
+        elif input_dict["Claim_amt"] > input_dict["Price_of_vehicle"] and input_dict["Claim_amt"] > input_dict["Market_value"]:
+            status = "Fraud"
+            explanation = "Claim amount is unusually high; it exceeds both the vehicle's purchase price and its current market value. This is a strong indicator of possible fraud."
 
         elif input_dict["Type_of_Incident"].lower() == "theft" and input_dict["Claim_amt"] == input_dict["Market_value"]:
             status = "Verification Needed"
@@ -373,21 +391,15 @@ def predict_fraud(request):
             status = "Fraud"
             explanation = "Alcohol consumption was reported during the incident. Claims involving drinking are considered high-risk and potentially fraudulent."
 
-
-        from collections import Counter
-        import json
-
-# Tokenize and count all non-zero TF-IDF keywords
+        # TF-IDF keyword scoring for pie chart
         keyword_scores = {feature_names[i]: tfidf_scores[i] for i in range(len(tfidf_scores)) if tfidf_scores[i] > 0}
-        sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)[:10]  # top 10
-
-# Prepare data for pie chart (labels and their corresponding scores)
+        sorted_keywords = sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True)[:10]
         keyword_labels = [kw[0] for kw in sorted_keywords]
-        keyword_values = [round(kw[1] * 100, 2) for kw in sorted_keywords]  # scale scores for visual effect
+        keyword_values = [round(kw[1] * 100, 2) for kw in sorted_keywords]
 
+        raw_anomaly_score = anomaly_score[0]
 
-        raw_anomaly_score = anomaly_score[0] 
-        # Final Result
+        # Final result dict
         result = {
             "prediction": status,
             "fraud_probability": f"{fraud_prob[0]:.2f}",
@@ -403,6 +415,7 @@ def predict_fraud(request):
         return render(request, 'myapp/fraud_result.html', {'result': result})
 
     return HttpResponse("Invalid Request")
+
 
 
 
@@ -507,6 +520,8 @@ def scan_view(request):
             messages.error(request, 'Please upload at least one document or police report.')
             return redirect('document_scan')
 
+        only_description = bool(files) and not police_reports
+
         # Extract and combine text
         try:
             texts = extract_text_from_files(all_files)
@@ -519,10 +534,18 @@ def scan_view(request):
             score = model.decision_function(embedding)[0]
 
             context = {
-                'prediction': 'Fraud' if pred == -1 else 'Genuine',
-                'reason': 'Detected patterns associated with fraud.' if pred == -1 else 'No significant fraud indicators detected.',
-                'score': round(score, 4)
-            }
+            'prediction': 'Fraud' if pred == -1 else 'Genuine',
+            'reason': (
+                "The system identified linguistic patterns and document characteristics commonly found in fraudulent claims. "
+                "This includes unusual phrasing, conflicting details, or red-flag keywords frequently associated with deceptive documentation."
+                if pred == -1 else
+                "The submitted documents appear consistent with legitimate claims based on linguistic patterns and typical characteristics of genuine documentation. "
+                "No major red flags or anomalies were detected."
+            ),
+            'score': round(score, 4),
+            'only_description': only_description
+        }
+
 
         except Exception as e:
             messages.error(request, f'Prediction error: {e}')
