@@ -4,20 +4,23 @@
 
 {% block content %}
 <h2 class="text-xl font-semibold mb-4 text-blue-800">Search Policy Holder</h2>
+
+<!-- Include FontAwesome for icons -->
 <script src="https://kit.fontawesome.com/your-kit-id.js" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<form method="POST" class="mb-6 flex space-x-0">
+<!-- Form for Searching Policy Number -->
+<form method="POST" class="mb-6 flex space-x-0" id="policy-form">
     {% csrf_token %}
-    <input type="text" name="policy_number" placeholder="Enter Policy Number" required
-           class="px-4 py-2 border border-gray-300 rounded shadow-sm w-1/2">
+    <input type="text" name="policy_number" placeholder="Enter Policy Number" 
+           class="px-4 py-2 border border-gray-300 rounded shadow-sm w-1/2" id="policy_number">
     <button type="submit"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-md transition">
         Search
     </button>
 </form>
-{% if result %}
 
+{% if result %}
 <!-- Profile Box -->
 <div class="bg-white border rounded-lg p-6 shadow-sm mb-6">
     <div class="flex items-center">
@@ -108,5 +111,45 @@
 
 {% endif %}
 
+<!-- SweetAlert and Validation Script -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Form validation with SweetAlert
+    document.getElementById('policy-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission to handle validation
+
+        const policyNumber = document.getElementById('policy_number').value.trim();
+
+        // Check if the input is empty
+        if (!policyNumber) {
+            // Show SweetAlert for empty input
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Policy number cannot be empty!',
+                confirmButtonText: 'OK'
+            });
+            return; // Prevent form submission
+        }
+
+        // Check if the policy number is numeric and at least 5 digits
+        const policyNumberPattern = /^[0-9]{5,}$/;  // Only numeric and at least 5 digits
+        if (!policyNumberPattern.test(policyNumber)) {
+            // Show SweetAlert for incorrect format
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Format',
+                text: 'Policy number must be numeric and at least 5 digits long!',
+                confirmButtonText: 'OK'
+            });
+            return; // Prevent form submission
+        }
+
+        // If validation passes, submit the form
+        this.submit();
+    });
+</script>
 
 {% endblock %}
+
+
