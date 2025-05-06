@@ -18,7 +18,7 @@ SECRET_KEY = 'django-insecure-m+w_@1b85za=rtj&w1z5rqnfy&@&%oi2&0f1v9pba#@p59h^vw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -39,6 +39,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'Fraud.urls'
@@ -95,6 +96,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images, Videos)
 STATIC_URL = 'static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Add this to support custom static files like videos
 STATICFILES_DIRS = [
