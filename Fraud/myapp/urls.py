@@ -13,6 +13,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='main_page'), name='logout'),
     path('document_scan/', views.scan_view, name='document_scan'),
     path('profile/', views.profile, name='profile'),
-
+    
 
 ]

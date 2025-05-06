@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Detectra{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        nav.custom-nav {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .custom-nav .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .nav-links a {
+            margin-left: 1rem;
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-indigo-50 to-blue-50 font-sans relative">
+
+<!-- Navbar -->
+<nav class="custom-nav">
+    <a href="{% url 'main_page' %}" id="detectra-logo" class="text-2xl font-bold text-blue-900 hover:text-blue-700 transition duration-200">
+        Detectra
+    </a>
+
+    <div class="nav-links">
+        <a href="#" onclick="goBack()">Back</a>  <!-- Back button, always visible -->
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="p-6">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- JavaScript -->
+<script>
+    // Function to go back to the main page
+    function goBack() {
+        window.location.href = "{% url 'main_page' %}";  // Redirect to main page
+    }
+
+    document.getElementById('detectra-logo').addEventListener('click', function (event) {
+        event.preventDefault();
+        const dashboardPath = "/user-dashboard/";
+        const currentPath = window.location.pathname;
+
+        if (currentPath === dashboardPath) {
+            window.location.reload();
+        } else {
+            window.location.href = dashboardPath;
+        }
+    });
+</script>
+
+</body>
+</html>
