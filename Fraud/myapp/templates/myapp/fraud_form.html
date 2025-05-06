@@ -1,216 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Fraud Check Form</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f9;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+  <meta charset="UTF-8">
+  <title>Detectra - Fraud Detection Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script>
+    function toggleFields() {
+      const type = document.getElementById("incidentType").value;
+      document.querySelectorAll(".accident-only").forEach(el => {
+        el.style.display = type === "Theft" ? "none" : "block";
+      });
+    }
+    document.addEventListener("DOMContentLoaded", toggleFields);
 
-        .container {
-            max-width: 600px;
-            margin: 40px auto;
-            background-color: #ffffff;
-            padding: 40px 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
-        }
+    function validateForm() {
+      const requiredFields = [
+        'market_value',
+        'claim_amt',
+        'eyewitness',
+        'past_claims',
+        'substantial_proofs'
+      ];
 
-        h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #2c3e50;
-        }
+      let isValid = true;
+      let messages = [];
 
-        .form-group {
-            margin-bottom: 20px;
+      requiredFields.forEach(name => {
+        const field = document.getElementsByName(name)[0];
+        if (!field.value.trim()) {
+          isValid = false;
+          messages.push("Some values are missing or not entered.");
         }
+      });
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #34495e;
+      // Only check accident-only fields if Accident is selected
+      const incidentType = document.getElementById('incidentType').value;
+      if (incidentType === 'Accident') {
+        const drinking = document.getElementsByName('drinking')[0];
+        const severity = document.getElementsByName('damage_severity')[0];
+
+        if (!drinking.value) {
+          isValid = false;
+          messages.push("Please provide Drinking information.");
         }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
+        if (!severity.value) {
+          isValid = false;
+          messages.push("Please provide Damage Severity.");
         }
+      }
 
-        input[readonly] {
-            background-color: #f1f1f1;
-        }
+      // Display the messages if validation fails
+      const messageContainer = document.getElementById('validationMessages');
+      if (messages.length > 0) {
+        messageContainer.innerHTML = messages.join("<br>");
+        messageContainer.classList.remove('hidden');
+      } else {
+        messageContainer.classList.add('hidden');
+      }
 
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        input[type="file"] {
-            margin-top: 8px;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-    </style>
+      return isValid;
+    }
+  </script>
 </head>
-<body>
-    <div class="container">
-        <h2>Fraud Detection Form</h2>
-        <form method="POST" enctype="multipart/form-data" action="{% url 'predict_fraud' %}">
-            {% csrf_token %}
+<body class="bg-blue-50">
 
-            <!-- Auto-filled Fields -->
-            <div class="form-group">
-                <label>Name:</label>
-                <input type="text" name="name" value="{{ prefill.name }}" readonly>
-            </div>
+<!-- Navigation Bar -->
+<nav class="custom-nav">
+  <a href="#" id="detectra-logo" class="text-2xl font-bold text-blue-900 hover:text-blue-700 transition duration-200">
+    Detectra
+  </a>
 
-            <div class="form-group">
-                <label>Age:</label>
-                <input type="number" name="age" value="{{ prefill.age }}" readonly>
-            </div>
+  <div class="nav-links">
+    {% if user.is_authenticated %}
+      <a href="{% url 'document_scan' %}">Document Scan</a>
+      <a href="#" onclick="showLogoutModal()">Logout</a>
+      <a href="{% url 'profile' %}">Profile</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="login-link">Login</a>
+    {% endif %}
+  </div>
+</nav>
 
-            <div class="form-group">
-                <label>Driving License No:</label>
-                <input type="text" name="driving_license_no" value="{{ prefill.driving_license_no }}" readonly>
-            </div>
+<!-- Logout Form -->
+<form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+  {% csrf_token %}
+</form>
 
-            <div class="form-group">
-                <label>Engine No:</label>
-                <input type="text" name="engine_no" value="{{ prefill.engine_no }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Body Type:</label>
-                <input type="text" name="body_type" value="{{ prefill.body_type }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Vehicle Use:</label>
-                <input type="text" name="vehicle_use" value="{{ prefill.vehicle_use }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Policy No:</label>
-                <input type="text" name="policy_no" value="{{ prefill.policy_no }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Policy Start Date:</label>
-                <input type="date" name="policy_start_date" value="{{ prefill.policy_start_date }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Policy End Date:</label>
-                <input type="date" name="policy_End_date" value="{{ prefill.policy_End_date }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Type of Incident:</label>
-                <input type="text" name="type_of_incident" value="{{ prefill.type_of_incident }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Price of Vehicle:</label>
-                <input type="number" name="price_of_vehicle" value="{{ prefill.price_of_vehicle }}" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Market Value:</label>
-                <input type="number" name="market_value" value="{{ prefill.market_value }}">
-            </div>
-
-            <!-- Manual Input Fields -->
-            <div class="form-group">
-                <label>Damage Severity:</label>
-                <input type="text" name="damage_severity">
-            </div>
-
-            <div class="form-group">
-                <label>Vehicle Age:</label>
-                <input type="number" name="vehicle_age">
-            </div>
-
-            <div class="form-group">
-                <label>Claim Amount:</label>
-                <input type="number" name="claim_amt">
-            </div>
-
-            <div class="form-group">
-                <label>Drinking:</label>
-                <select name="drinking">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Eyewitness:</label>
-                <select name="eyewitness">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Past Claims:</label>
-                <select name="past_claims">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Substantial Proofs:</label>
-                <select name="substantial_proofs">
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                </select>
-            </div>
-
-            <!-- Description and Police Report -->
-            <div class="form-group">
-                <label>Description (Text or PDF):</label>
-                <textarea name="description" placeholder="Enter description..."></textarea>
-                <input type="file" name="description_file" accept=".pdf,.txt">
-            </div>
-
-            <div class="form-group">
-                <label>Police Report (Text or PDF):</label>
-                <textarea name="police_report" placeholder="Enter police report..."></textarea>
-                <input type="file" name="police_report_file" accept=".pdf,.txt">
-            </div>
-
-            <button type="submit">Submit for Fraud Check</button>
-        </form>
+<!-- Logout Modal -->
+<div id="logout-modal" class="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-xl shadow-xl p-6 w-96 text-center">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Are you sure you want to logout?</h2>
+    <div class="flex justify-center gap-4">
+      <button onclick="submitLogout()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">Yes, Logout</button>
+      <button onclick="hideLogoutModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- Logout Modal Scripts -->
+<script>
+  function showLogoutModal() {
+    document.getElementById('logout-modal').classList.remove('hidden');
+  }
+
+  function hideLogoutModal() {
+    document.getElementById('logout-modal').classList.add('hidden');
+  }
+
+  function submitLogout() {
+    document.getElementById('logout-form').submit();
+  }
+
+  document.getElementById('detectra-logo').addEventListener('click', function (event) {
+    event.preventDefault();
+    const currentPath = window.location.pathname;
+    const dashboardPath = "/admin-dashboard/";
+    if (currentPath === dashboardPath) {
+      window.location.reload();
+    } else {
+      window.location.href = dashboardPath;
+    }
+  });
+</script>
+
+<!-- Add these styles inside <head> if not already present -->
+<style>
+  nav.custom-nav {
+    background-color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .custom-nav .brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1e3a8a;
+  }
+
+  .custom-nav .login-link {
+    color: #1e3a8a;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+
+  .custom-nav .login-link:hover {
+    color: #dc2626;
+  }
+
+  .nav-links a {
+    margin-left: 1rem;
+    color: #1e3a8a;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover {
+    color: #dc2626;
+  }
+</style>
+
+
+  <!-- Form Container -->
+  <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mb-10">
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Insurance Fraud Detection Form</h2>
+
+    <form method="POST" enctype="multipart/form-data" action="{% url 'predict_fraud' %}" class="space-y-6" onsubmit="return validateForm()">
+      {% csrf_token %}
+
+      <!-- Prefilled Group -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Name:</label>
+          <input type="text" name="name" value="{{ prefill.name }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Age:</label>
+          <input type="number" name="age" value="{{ prefill.age }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Driving License No:</label>
+          <input type="text" name="driving_license_no" value="{{ prefill.driving_license_no }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Engine No:</label>
+          <input type="text" name="engine_no" value="{{ prefill.engine_no }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Body Type:</label>
+          <input type="text" name="body_type" value="{{ prefill.body_type }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Vehicle Use:</label>
+          <input type="text" name="vehicle_use" value="{{ prefill.vehicle_use }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Policy No:</label>
+          <input type="text" name="policy_no" value="{{ prefill.policy_no }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Policy Start Date:</label>
+          <input type="date" name="policy_start_date" value="{{ prefill.policy_start_date }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Policy End Date:</label>
+          <input type="date" name="policy_End_date" value="{{ prefill.policy_End_date }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Price of Vehicle:</label>
+          <input type="number" name="price_of_vehicle" value="{{ prefill.price_of_vehicle }}" readonly class="input">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Market Value:</label>
+          <input type="number" name="market_value" value="{{ prefill.market_value }}" class="input">
+        </div>
+      </div>
+
+      <!-- Type of Incident -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Type of Incident:</label>
+        <select name="type_of_incident" id="incidentType" onchange="toggleFields()" class="input">
+          <option value="Accident">Accident</option>
+          <option value="Theft">Theft</option>
+        </select>
+      </div>
+
+      <!-- Conditional Fields -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="accident-only">
+          <label class="block text-sm font-medium text-gray-700">Damage Severity:</label>
+          <select name="damage_severity" class="input">
+            <option value="Light">Light</option>
+            <option value="Significant">Significant</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Claim Amount:</label>
+          <input type="number" name="claim_amt" class="input">
+        </div>
+
+        <div class="accident-only">
+          <label class="block text-sm font-medium text-gray-700">Drinking:</label>
+          <select name="drinking" class="input">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Eyewitness:</label>
+          <select name="eyewitness" class="input">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Past Claims:</label>
+          <select name="past_claims" class="input">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Substantial Proofs:</label>
+          <select name="substantial_proofs" class="input">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Unstructured Fields -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Description (Text or PDF):</label>
+        <textarea name="description" class="input" placeholder="Enter description..."></textarea>
+        <input type="file" name="description_file" accept=".pdf,.txt" class="mt-2">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Police Report (Text or PDF):</label>
+        <textarea name="police_report" class="input" placeholder="Enter police report..."></textarea>
+        <input type="file" name="police_report_file" accept=".pdf,.txt" class="mt-2">
+      </div>
+
+      <!-- Validation Messages -->
+      <div id="validationMessages" class="text-red-600 mb-6 hidden"></div>
+
+      <!-- Submit Button -->
+      <div class="pt-4">
+        <button type="submit" class="bg-blue-900 hover:bg-blue-800 text-white py-3 px-6 rounded-lg w-full font-semibold">
+          Submit for Fraud Check
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <style>
+    .input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      background-color: #f9fafb;
+    }
+  </style>
 </body>
 </html>

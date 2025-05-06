@@ -3,11 +3,17 @@
 {% block title %}Admin - Search Policy{% endblock %}
 
 {% block content %}
-<h2 class="text-xl font-semibold mb-4 text-blue-800">🔍 Search Policy Holder</h2>
-<form method="POST" class="mb-6 flex space-x-4">
+<h2 class="text-xl font-semibold mb-4 text-blue-800">Search Policy Holder</h2>
+
+<!-- Include FontAwesome for icons -->
+<script src="https://kit.fontawesome.com/your-kit-id.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Form for Searching Policy Number -->
+<form method="POST" class="mb-6 flex space-x-0" id="policy-form">
     {% csrf_token %}
-    <input type="text" name="policy_number" placeholder="Enter Policy Number" required
-           class="px-4 py-2 border border-gray-300 rounded shadow-sm w-1/2">
+    <input type="text" name="policy_number" placeholder="Enter Policy Number" 
+           class="px-4 py-2 border border-gray-300 rounded shadow-sm w-1/2" id="policy_number">
     <button type="submit"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-md transition">
         Search
@@ -15,26 +21,135 @@
 </form>
 
 {% if result %}
-    <div class="bg-white p-6 rounded shadow-md border">
-        <h3 class="text-lg font-semibold mb-4 text-green-700">✅ Policy Details</h3>
-        <table class="table-auto w-full text-left">
-            <tr><th class="p-2">Name</th><td>{{ result.Name }}</td></tr>
-            <tr><th class="p-2">Policy No</th><td>{{ result.Policy_no }}</td></tr>
-            <tr><th class="p-2">Principal Amount</th><td>{{ result.Principal_amt }}</td></tr>
-            <tr><th class="p-2">License No</th><td>{{ result.Driving_License_No }}</td></tr>
-            <tr><th class="p-2">Engine No</th><td>{{ result.Engine_no }}</td></tr>
-            <tr><th class="p-2">Start Date</th><td>{{ result.Policy_start_date }}</td></tr>
-            <tr><th class="p-2">End Date</th><td>{{ result.Policy_End_date }}</td></tr>
-            <tr><th class="p-2">Price of Vehicle</th><td>{{ result.Price_of_vehicle }}</td></tr>
-            <tr><th class="p-2">Past Claims</th><td>{{ result.Past_claims }}</td></tr>
-        </table>
-
-        <div class="mt-6">
-            <a href="{% url 'fraud_form' result.Policy_no %}"
-               class="bg-aqua-600 hover:bg-red-700 text-white px-4 py-2 rounded shadow-md transition">
-                🚨 Fraud Check Maadi
-            </a>
+<!-- Profile Box -->
+<div class="bg-white border rounded-lg p-6 shadow-sm mb-6">
+    <div class="flex items-center">
+        <div class="text-4xl text-blue-500 mr-4">
+            <i class="fa-solid fa-face-smile"></i>
+        </div>
+        <div>
+            <p class="text-lg font-semibold text-gray-800">{{ result.Name }}</p>
+            <p class="text-sm text-gray-500">Policy Number: {{ result.Policy_no }}</p>
         </div>
     </div>
+</div>
+
+<!-- Details Box -->
+<div class="bg-white border rounded-lg p-6 shadow-sm space-y-4">
+
+    <!-- Principal Amount -->
+    <div class="flex items-start">
+        <i class="fa-solid fa-money-bill text-green-500 text-xl mr-3 mt-1"></i>
+        <div>
+            <p class="text-sm font-medium text-gray-700">Principal Amount</p>
+            <p class="text-gray-600">{{ result.Principal_amt }}</p>
+        </div>
+    </div>
+
+    <!-- Price of Vehicle -->
+    <div class="flex items-start">
+        <i class="fa-solid fa-money-bill text-green-500 text-xl mr-3 mt-1"></i>
+        <div>
+            <p class="text-sm font-medium text-gray-700">Price of Vehicle</p>
+            <p class="text-gray-600">{{ result.Price_of_vehicle }}</p>
+        </div>
+    </div>
+
+    <!-- License Number -->
+    <div class="flex items-start">
+        <i class="fa-solid fa-id-card text-blue-600 text-xl mr-3 mt-1"></i>
+        <div>
+            <p class="text-sm font-medium text-gray-700">License Number</p>
+            <p class="text-gray-600">{{ result.Driving_License_No }}</p>
+        </div>
+    </div>
+
+    <!-- Engine Number -->
+    <div class="flex items-start">
+        <i class="fa-solid fa-car-side text-indigo-500 text-xl mr-3 mt-1"></i>
+        <div>
+            <p class="text-sm font-medium text-gray-700">Engine Number</p>
+            <p class="text-gray-600">{{ result.Engine_no }}</p>
+        </div>
+    </div>
+
+    <!-- Policy Start Date -->
+    <div class="flex items-start">
+        <i class="fa-solid fa-calendar-days text-pink-500 text-xl mr-3 mt-1"></i>
+        <div>
+            <p class="text-sm font-medium text-gray-700">Policy Start Date</p>
+            <p class="text-gray-600">{{ result.Policy_start_date }}</p>
+        </div>
+    </div>
+
+    <!-- Policy End Date -->
+    <div class="flex items-start">
+        <i class="fa-solid fa-calendar-days text-pink-500 text-xl mr-3 mt-1"></i>
+        <div>
+            <p class="text-sm font-medium text-gray-700">Policy End Date</p>
+            <p class="text-gray-600">{{ result.Policy_End_date }}</p>
+        </div>
+    </div>
+
+    <!-- Past Claims -->
+    <div class="flex items-start">
+        <i class="fa-solid fa-file text-orange-500 text-xl mr-3 mt-1"></i>
+        <div>
+            <p class="text-sm font-medium text-gray-700">Past Claims</p>
+            <p class="text-gray-600">{{ result.Past_claims }}</p>
+        </div>
+    </div>
+
+    <!-- Fraud Check Button -->
+    <div class="pt-4">
+        <a href="{% url 'fraud_form' result.Policy_no %}"
+           class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded shadow-md transition">
+            Check for Fraud
+        </a>
+    </div>
+</div>
+
 {% endif %}
+
+<!-- SweetAlert and Validation Script -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Form validation with SweetAlert
+    document.getElementById('policy-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission to handle validation
+
+        const policyNumber = document.getElementById('policy_number').value.trim();
+
+        // Check if the input is empty
+        if (!policyNumber) {
+            // Show SweetAlert for empty input
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Policy number cannot be empty!',
+                confirmButtonText: 'OK'
+            });
+            return; // Prevent form submission
+        }
+
+        // Check if the policy number is numeric and at least 5 digits
+        const policyNumberPattern = /^[0-9]{5,}$/;  // Only numeric and at least 5 digits
+        if (!policyNumberPattern.test(policyNumber)) {
+            // Show SweetAlert for incorrect format
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Format',
+                text: 'Policy number must be numeric and at least 5 digits long!',
+                confirmButtonText: 'OK'
+            });
+            return; // Prevent form submission
+        }
+
+        // If validation passes, submit the form
+        this.submit();
+    });
+</script>
+
 {% endblock %}
+
+

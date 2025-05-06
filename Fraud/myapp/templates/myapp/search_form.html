@@ -1,4 +1,38 @@
-<!-- Fraud/myapp/templates/myapp/search_form.html -->
+<html>
+<head>
+    <title>Search Policy</title>
+</head>
+<body>
+    <h2>Search for an Insurance Policy</h2>
+
+    <form method="POST" id="policyForm">
+        {% csrf_token %}
+        <label for="policy_number">Enter Policy Number:</label>
+        <input type="text" name="policy_number" id="policy_number" />
+        <button type="submit">Search</button>
+    </form>
+
+    <script>
+    window.onload = function() {
+        const form = document.getElementById("policyForm");
+
+        form.addEventListener("submit", function(event) {
+            const policyInput = document.getElementById("policy_number").value.trim();
+
+            const policyRegex = /^[A-Z0-9]{8}$/; // Only capital letters and numbers, 8 characters
+
+            if (!policyRegex.test(policyInput)) {
+                alert("Please enter a valid Policy Number (8 characters, capital letters or numbers).");
+                event.preventDefault();  // Important: STOP form submit
+            }
+        });
+    };
+    </script>
+</body>
+</html>
+
+
+{% comment %} <!-- Fraud/myapp/templates/myapp/search_form.html -->
 <html>
 <head>
     <title>Search Policy</title>
@@ -12,4 +46,4 @@
         <button type="submit">Search</button>
     </form>
 </body>
-</html>
+</html> {% endcomment %}

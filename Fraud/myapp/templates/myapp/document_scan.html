@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document Fraud Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        nav.custom-nav {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .custom-nav .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .custom-nav .login-link {
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .custom-nav .login-link:hover {
+            color: #dc2626;
+        }
+
+        .nav-links a {
+            margin-left: 1rem;
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans relative">
+
+<!-- Navbar -->
+<nav class="custom-nav">
+    <a href="#" id="detectra-logo" class="text-2xl font-bold text-blue-900 hover:text-blue-700 transition duration-200">
+        Detectra
+    </a>
+
+    <div class="nav-links">
+        {% if user.is_authenticated %}
+            <a href="{% url 'admin_dashboard' %}">Back </a>
+            <a href="#" onclick="showLogoutModal()">Logout</a>
+            <a href="{% url 'profile' %}">Profile</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="login-link">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- Hidden Logout Form -->
+<form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<!-- Main Content -->
+<main class="p-6">
+<script>
+  function togglePoliceReportInput() {
+    const checkbox = document.getElementById('has-police-report');
+    const reportInputDiv = document.getElementById('police-report-section');
+    reportInputDiv.style.display = checkbox.checked ? 'block' : 'none';
+  }
+</script>
+
+<div class="w-full max-w-3xl bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8 space-y-6 border border-gray-200 mx-auto mt-8">
+  <h1 class="text-4xl font-extrabold text-center text-blue-800 tracking-tight">
+    Document Fraud Scanner
+  </h1>
+  <p class="text-center text-gray-600 text-sm">Upload claim documents and police reports to detect possible fraud.</p>
+
+  <form
+    id="scan-form"
+    method="POST"
+    action="{% url 'document_scan' %}"
+    enctype="multipart/form-data"
+    class="space-y-6"
+  >
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Upload Claim Documents (PDF, JPG, PNG)</label>
+      <input
+        type="file"
+        name="documents"
+        accept=".pdf,.jpg,.jpeg,.png"
+        multiple
+        required
+        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 p-2"
+      />
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <input
+        type="checkbox"
+        id="has-police-report"
+        name="has_police_report"
+        onchange="togglePoliceReportInput()"
+        class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+      />
+      <label for="has-police-report" class="text-sm text-gray-700">I have a police report to upload</label>
+    </div>
+
+    <div id="police-report-section" style="display: none;">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Upload Police Reports (PDF, JPG, PNG)</label>
+      <input
+        type="file"
+        name="police_reports"
+        accept=".pdf,.jpg,.jpeg,.png"
+        multiple
+        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 p-2"
+      />
+    </div>
+
+    <div class="pt-4">
+      <button
+        type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-2 px-4 rounded-lg shadow-md"
+      >
+        Scan for Fraud
+      </button>
+    </div>
+  </form>
+
+  {% if messages %}
+    <div class="mt-4">
+      {% for message in messages %}
+        <p class="text-red-600 font-medium">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if prediction %}
+    <div class="mt-6 bg-white shadow-sm border border-gray-300 p-5 rounded-xl space-y-3">
+      <h2 class="text-xl font-bold">
+        Status:
+        <span class="{% if prediction == 'Fraud' %}text-red-600{% else %}text-green-600{% endif %}">
+          {{ prediction }}
+        </span>
+      </h2>
+      <p class="text-gray-700 text-sm"><strong>Reason:</strong> {{ reason }}</p>
+      <p class="text-gray-700 text-sm"><strong>Confidence Score:</strong> {{ score }}</p>
+    </div>
+  {% endif %}
+
+  {% if only_description %}
+    <div class="mt-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 rounded-lg">
+      <p class="font-semibold">Note: Only the claim description was provided.</p>
+      <p class="text-sm">For a more accurate fraud analysis, please include the police report as well. Manual investigation might be necessary.</p>
+    </div>
+  {% endif %}
+</div>
+</main>
+
+<!-- Logout Modal -->
+<div id="logout-modal" class="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-96 text-center">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Are you sure you want to logout?</h2>
+        <div class="flex justify-center gap-4">
+            <button onclick="submitLogout()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">Yes, Logout</button>
+            <button onclick="hideLogoutModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Modal & Logo -->
+<script>
+    function showLogoutModal() {
+        document.getElementById('logout-modal').classList.remove('hidden');
+    }
+
+    function hideLogoutModal() {
+        document.getElementById('logout-modal').classList.add('hidden');
+    }
+
+    function submitLogout() {
+        document.getElementById('logout-form').submit();
+    }
+
+    document.getElementById('detectra-logo').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const currentPath = window.location.pathname;
+        const dashboardPath = "/admin-dashboard/";
+
+        if (currentPath === dashboardPath) {
+            window.location.reload();
+        } else {
+            window.location.href = dashboardPath;
+        }
+    });
+</script>
+
+</body>
+</html>
+
+
+{% comment %} {% extends 'myapp/admin_base.html' %}
+
+{% block title %}Document Fraud Detection{% endblock %}
+
+{% block content %}
+<script>
+  function togglePoliceReportInput() {
+    const checkbox = document.getElementById('has-police-report');
+    const reportInputDiv = document.getElementById('police-report-section');
+    reportInputDiv.style.display = checkbox.checked ? 'block' : 'none';
+  }
+</script>
+
+<div class="w-full max-w-3xl bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8 space-y-6 border border-gray-200 mx-auto mt-8">
+  <h1 class="text-4xl font-extrabold text-center text-blue-800 tracking-tight">
+    Document Fraud Scanner
+  </h1>
+  <p class="text-center text-gray-600 text-sm">Upload claim documents and police reports to detect possible fraud.</p>
+
+  <form
+    id="scan-form"
+    method="POST"
+    action="{% url 'document_scan' %}"
+    enctype="multipart/form-data"
+    class="space-y-6"
+  >
+    {% csrf_token %}
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Upload Claim Documents (PDF, JPG, PNG)</label>
+      <input
+        type="file"
+        name="documents"
+        accept=".pdf,.jpg,.jpeg,.png"
+        multiple
+        required
+        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 p-2"
+      />
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <input
+        type="checkbox"
+        id="has-police-report"
+        name="has_police_report"
+        onchange="togglePoliceReportInput()"
+        class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+      />
+      <label for="has-police-report" class="text-sm text-gray-700">I have a police report to upload</label>
+    </div>
+
+    <div id="police-report-section" style="display: none;">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Upload Police Reports (PDF, JPG, PNG)</label>
+      <input
+        type="file"
+        name="police_reports"
+        accept=".pdf,.jpg,.jpeg,.png"
+        multiple
+        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 p-2"
+      />
+    </div>
+
+    <div class="pt-4">
+      <button
+        type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-2 px-4 rounded-lg shadow-md"
+      >
+        Scan for Fraud
+      </button>
+    </div>
+  </form>
+
+  {% if messages %}
+    <div class="mt-4">
+      {% for message in messages %}
+        <p class="text-red-600 font-medium">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if prediction %}
+    <div class="mt-6 bg-white shadow-sm border border-gray-300 p-5 rounded-xl space-y-3">
+      <h2 class="text-xl font-bold">
+        Status:
+        <span class="{% if prediction == 'Fraud' %}text-red-600{% else %}text-green-600{% endif %}">
+          {{ prediction }}
+        </span>
+      </h2>
+      <p class="text-gray-700 text-sm"><strong>Reason:</strong> {{ reason }}</p>
+      <p class="text-gray-700 text-sm"><strong>Confidence Score:</strong> {{ score }}</p>
+    </div>
+  {% endif %}
+
+  {% if only_description %}
+    <div class="mt-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 rounded-lg">
+      <p class="font-semibold">Note: Only the claim description was provided.</p>
+      <p class="text-sm">For a more accurate fraud analysis, please include the police report as well. Manual investigation might be necessary.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %} {% endcomment %}

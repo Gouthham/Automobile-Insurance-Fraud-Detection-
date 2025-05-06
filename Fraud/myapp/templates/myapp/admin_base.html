@@ -1,34 +1,124 @@
-<!-- templates/myapp/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Auto Insurance{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        nav.custom-nav {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .custom-nav .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .custom-nav .login-link {
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .custom-nav .login-link:hover {
+            color: #dc2626;
+        }
+
+        .nav-links a {
+            margin-left: 1rem;
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #dc2626;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gradient-to-r from-indigo-50 to-blue-50 font-sans relative">
 
 <!-- Navbar -->
-<nav class="bg-blue-800 p-4 shadow-md flex justify-between items-center">
-    <div class="text-white text-2xl font-bold">🚗 Auto Insurance</div>
+<nav class="custom-nav">
+    <!-- base.html (inside the navbar where Detectra is shown) -->
+    <a href="#" id="detectra-logo" class="text-2xl font-bold text-blue-900 hover:text-blue-700 transition duration-200">
+    Detectra
+    </a>
 
-    <div class="relative group">
+    <div class="nav-links">
         {% if user.is_authenticated %}
-            <button class="text-white font-semibold hover:text-yellow-300 transition focus:outline-none">
-                👤 {{ user.username }}
-            </button>
-            <div class="absolute right-0 hidden group-hover:block bg-white border mt-2 rounded shadow-md z-50">
-                <a href="{% url 'profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profile</a>
-                <a href="{% url 'logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Logout</a>
-            </div>
+            <a href="{% url 'document_scan' %}">Document Scan</a>
+            <a href="#" onclick="showLogoutModal()">Logout</a>
+            <a href="{% url 'profile' %}">Profile</a>
         {% else %}
-            <a href="{% url 'login' %}" class="text-white font-semibold hover:text-yellow-300 transition">Login</a>
+            <a href="{% url 'login' %}" class="login-link">Login</a>
         {% endif %}
     </div>
 </nav>
 
+<!-- Hidden Logout Form -->
+<form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<!-- Main Content -->
 <main class="p-6">
     {% block content %}{% endblock %}
 </main>
+
+<!-- Logout Modal -->
+<div id="logout-modal" class="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-96 text-center">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Are you sure you want to logout?</h2>
+        <div class="flex justify-center gap-4">
+            <button onclick="submitLogout()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">Yes, Logout</button>
+            <button onclick="hideLogoutModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Modal -->
+<script>
+    function showLogoutModal() {
+        document.getElementById('logout-modal').classList.remove('hidden');
+    }
+
+    function hideLogoutModal() {
+        document.getElementById('logout-modal').classList.add('hidden');
+    }
+
+    function submitLogout() {
+        document.getElementById('logout-form').submit();
+    }
+</script>
+<script>
+    document.getElementById('detectra-logo').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const currentPath = window.location.pathname;
+
+        // Correct URL (match your real route)
+        const dashboardPath = "/admin-dashboard/";
+
+        if (currentPath === dashboardPath) {
+            // If already on the dashboard, refresh
+            window.location.reload();
+        } else {
+            // Else, redirect to the dashboard
+            window.location.href = dashboardPath;
+        }
+    });
+</script>
+
+
 </body>
 </html>

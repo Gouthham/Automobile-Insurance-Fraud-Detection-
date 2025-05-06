@@ -1,20 +1,195 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fraud Prediction Result</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        nav.custom-nav {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .custom-nav .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+        .custom-nav .login-link {
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .custom-nav .login-link:hover {
+            color: #dc2626;
+        }
+        .nav-links a {
+            margin-left: 1rem;
+            color: #1e3a8a;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover {
+            color: #dc2626;
+        }
+    </style>
 </head>
-<body>
-    <h2>Fraud Check Result</h2>
+<body class="bg-gray-100 font-sans">
 
-    <p><strong>Status:</strong> {{ result.prediction }}</p>
-    <p><strong>Fraud Probability:</strong> {{ result.fraud_probability }}%</p>
-    <p><strong>Reason:</strong> {{ result.explanation }}</p>
+<!-- Navbar -->
+<nav class="custom-nav">
+    <a href="#" id="detectra-logo" class="text-2xl font-bold text-blue-900 hover:text-blue-700 transition duration-200">
+        Detectra
+    </a>
+    <div class="nav-links">
+        {% if user.is_authenticated %}
+            <a href="{% url 'document_scan' %}">Document Scan</a>
+            <a href="#" onclick="showLogoutModal()">Logout</a>
+            <a href="{% url 'profile' %}">Profile</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="login-link">Login</a>
+        {% endif %}
+    </div>
+</nav>
 
-    <h3>NLP Analysis (Unstructured Text)</h3>
-    <p><strong>Description Fraud Score:</strong> {{ result.nlp_fraud_score }}%</p>
-    <p><strong>Top Keywords Detected:</strong> {{ result.nlp_keywords|join:", " }}</p>
-    <p><strong>Similarity with Police Report:</strong> {{ result.nlp_similarity }}%</p>
+<!-- Main Container -->
+<div class="max-w-7xl mx-auto my-6 px-4">
 
-    <br>
-    <a href="/">Back to Search</a>
+    <!-- Top Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-red-100 p-4 rounded-lg shadow-md">
+            <p class="text-xl font-semibold text-gray-800">Status:</p>
+            <p class="text-2xl font-bold text-red-600">{{ result.prediction }}</p>
+        </div>
+        <!-- Probability Box -->
+        <div class="bg-yellow-100 p-4 rounded-lg shadow-md">
+            <p class="text-xl font-semibold text-gray-800">
+                {% if result.prediction == "Fraud" %}
+                    Fraud Probability:
+                {% else %}
+                    Legitimate Probability:
+                {% endif %}
+            </p>
+        <p class="text-2xl font-bold text-yellow-600">{{ result.fraud_probability }}%</p>
+        </div>
+        <div class="bg-green-100 p-4 rounded-lg shadow-md col-span-1 md:col-span-1">
+            <p class="text-xl font-semibold text-gray-800">Reason:</p>
+            <p class="text-base text-gray-700">{{ result.explanation }}</p>
+        </div>
+        <!-- Anomaly Score -->
+        <div class="bg-purple-100 p-4 rounded-lg shadow-md">
+            <p class="text-xl font-semibold text-gray-800">Anomaly Score:</p>
+            <p class="text-2xl font-bold text-purple-700">{{ result.anomaly_score }}</p>
+        </div>
+    </div>
+
+
+<!-- Main Analysis Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Keywords -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Top Keywords Detected</h3>
+        <ul class="list-disc list-inside text-gray-700">
+            {% for word in result.nlp_keywords %}
+                <li>{{ word }}</li>
+            {% empty %}
+                <li>No keywords detected.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Similarity -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Similarity Score</h3>
+        <p class="text-2xl font-bold {% if result.nlp_similarity < 50 %}text-red-600{% else %}text-green-600{% endif %}">
+            {{ result.nlp_similarity }}%
+        </p>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Keyword Importance</h3>
+        <canvas id="keywordPieChart" width="300" height="300"></canvas>
+    </div>
+</div>
+
+
+    <!-- Back Link -->
+    <div class="flex justify-center mt-10">
+        <a href="{% url 'admin_dashboard' %}" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg font-semibold transition ease-in-out duration-300">Back to Home</a>
+    </div>
+</div>
+
+<!-- Logout Script -->
+<script>
+    function showLogoutModal() {
+        document.getElementById('logout-modal').classList.remove('hidden');
+    }
+    function hideLogoutModal() {
+        document.getElementById('logout-modal').classList.add('hidden');
+    }
+    function submitLogout() {
+        document.getElementById('logout-form').submit();
+    }
+    document.getElementById('detectra-logo').addEventListener('click', function (event) {
+        event.preventDefault();
+        const currentPath = window.location.pathname;
+        const dashboardPath = "/admin-dashboard/";
+        if (currentPath === dashboardPath) {
+            window.location.reload();
+        } else {
+            window.location.href = dashboardPath;
+        }
+    });
+</script>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('keywordPieChart').getContext('2d');
+        const labels = JSON.parse('{{ result.keyword_labels|safe }}');
+        const values = JSON.parse('{{ result.keyword_values|safe }}');
+
+        if (labels.length > 0) {
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Keyword TF-IDF Score',
+                        data: values,
+                        backgroundColor: [
+                            '#60a5fa', '#f87171', '#34d399', '#fbbf24',
+                            '#a78bfa', '#f472b6', '#38bdf8', '#facc15',
+                            '#818cf8', '#fb7185'
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Top Repeated/Important Keywords'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+
 </body>
 </html>

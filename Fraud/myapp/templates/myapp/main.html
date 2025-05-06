@@ -1,257 +1,444 @@
-<!DOCTYPE html>
+
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Detectra - Auto Insurance Fraud Detection</title>
+  <title>Detectra - Smarter Vehicle Insurance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- Font Awesome for social media icons -->
   <style>
-    .card {
-      background-color: #fff;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.08);
-      padding: 20px;
-      margin-bottom: 30px;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
+    #chatbotToggle {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 50;
+    }
+    #chatbotWindow {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 30px;
+      width: 300px;
+      max-height: 400px;
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 50;
+      overflow: hidden;
+    }
+    .question-btn {
+      background-color: #f3f4f6;
+      border: 1px solid #d1d5db;
+      padding: 8px 16px;
+      border-radius: 0.5rem;
+      margin: 5px 0;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .question-btn:hover {
+      background-color: #e5e7eb;
+    }
+    .hero-slide {
       display: none;
     }
-    .card.visible {
+    .hero-slide.active {
       display: block;
-    }
-    .top-section {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
-    .logo-title {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-    .logo-title img {
-      height: 40px;
-    }
-    .label {
-      font-weight: bold;
-      color: #444;
-    }
-    .value {
-      font-weight: bold;
-      color: #007bff;
-    }
-    .price-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-    }
-    .price {
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-    }
-    .check-button {
-      background-color: #ff4d58;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .features {
-      margin-top: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      color: #28a745;
-      font-size: 14px;
-    }
-    .features div::before {
-      content: "\2714";
-      color: #28a745;
-      margin-right: 8px;
-    }
-    .see-more {
-      text-align: center;
-      margin-top: 30px;
-    }
-    .see-more button {
-      background-color: white;
-      color: #007bff;
-      padding: 10px 20px;
-      border: 2px solid #007bff;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
     }
   </style>
 </head>
-<body class="bg-blue-50">
+<body class="bg-gray-50">
 
 <!-- Navigation -->
-<nav class="bg-white px-8 py-4 flex justify-between items-center shadow-md rounded-b-md mb-8">
+<nav class="bg-white shadow-md px-6 py-4 flex justify-between items-center">
   <div class="text-2xl font-bold text-blue-800">Detectra</div>
   <div>
-    <a href="{% url 'login' %}" class="text-blue-800 font-semibold hover:text-red-600 transition">Login</a>
+    <a href="{% url 'login' %}" class="text-blue-700 font-semibold hover:text-red-600 transition">Login</a>
   </div>
 </nav>
 
-<!-- Main Section -->
-<div class="max-w-5xl mx-auto px-4">
+<!-- Hero Section with Slider -->
+<section class="relative bg-gradient-to-br from-blue-50 to-blue-200 py-16 px-6 text-center">
+  <div class="max-w-3xl mx-auto">
+    <div id="heroSlider" class="relative">
+      <div class="hero-slide active">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+          Stay Ahead of Insurance Scams.<br /> Check Smarter with Detectra.
+        </h1>
+        <p class="mt-4 text-lg text-blue-800">
+          Fast. Accurate. Transparent pricing & policy lookup made easy.
+        </p>
+      </div>
+      <div class="hero-slide">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+          Instant Pricing.<br /> Real-Time Verification.
+        </h1>
+        <p class="mt-4 text-lg text-blue-800">
+          Protect your vehicle with data-driven estimates and policy checks.
+        </p>
+      </div>
+      <div class="hero-slide">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-blue-900 leading-tight">
+          Simple & Seamless.<br /> Get Your Estimate Now.
+        </h1>
+        <p class="mt-4 text-lg text-blue-800">
+          Quickly check your vehicle's value with a few simple inputs.
+        </p>
+      </div>
+    </div>
+    <a href="{% url 'login' %}" class="mt-6 inline-block bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 text-lg">Login to Your Dashboard</a>
+  </div>
+</section>
 
-  <!-- Insurance Card -->
-  <div class="bg-white shadow-md rounded-lg p-8 mb-10 text-center">
-    <h1 class="text-3xl font-bold text-gray-800 mb-2">Car Insurance</h1>
-    <p class="text-lg text-gray-600 mb-4">Car insurance starting from <span class="text-blue-700 font-semibold">₹6/day*</span></p>
+<!-- Estimate Section -->
+<section class="bg-white py-14 px-6 shadow-inner">
+  <h2 class="text-2xl font-bold text-center mb-6">Get The Market Price Estimate</h2>
+  <div class="max-w-xl mx-auto">
+    <form id="estimateForm" class="bg-blue-50 p-6 rounded-xl shadow-md">
+      {% csrf_token %}
+      <label class="block mb-3 font-semibold text-gray-700">Enter Engine Number</label>
+      <input type="text" id="engine_no" name="engine_no" placeholder="e.g. VLMXVU50VDVGJ1777" class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">Check Prices</button>
+    </form>
 
-    <div class="flex justify-center text-sm text-gray-500 space-x-4 steps mb-4">
-      <span>Car No.</span>
-      <span>Select Plan</span>
-      <span>Policy Issued</span>
+    <!-- Result Box -->
+    <div id="estimateResult" class="mt-6 hidden bg-white p-4 border rounded-lg shadow text-center"></div>
+  </div>
+</section>
+
+
+<!-- What is Detectra Section -->
+<section class="bg-white py-14 px-6 shadow-inner">
+  <div class="max-w-5xl mx-auto text-center">
+    <h2 class="text-3xl font-bold text-blue-800 mb-6">What Does Detectra Do?</h2>
+    <p class="text-gray-700 text-md leading-relaxed mb-6">
+      <strong>Detectra</strong> is an intelligent vehicle insurance fraud detection system designed to enhance trust, reduce fraudulent claims, and protect insurers and policyholders alike.
+      The system uses a combination of traditional structured data (such as claim amount, incident type, vehicle info) and unstructured data (description and police reports) to determine the likelihood of fraud in insurance claims.
+    </p>
+    <p class="text-gray-700 text-md leading-relaxed mb-6">
+      It includes advanced AI models to analyze descriptions and police reports, highlight suspicious keywords, compute similarity scores, and generate fraud probability scores. 
+      The system also provides full claim details, interactive dashboards for admins and users, and visual explanations powered by SHAP or LIME.
+    </p>
+    <p class="text-gray-700 text-left leading-relaxed mb-6">
+      Detectra empowers insurance companies to:
+      <ul class="text-left mt-4 list-disc list-inside text-gray-700">
+        <li> Automatically detect fraud using structured and unstructured claim data</li>
+        <li> Scan and compare PDF or text versions of claim descriptions and police reports</li>
+        <li> Visualize fraud probability with intuitive graphs and reasoning</li>
+        <li> Get keyword-level fraud indicators extracted by NLP techniques</li>
+        <li> Enable both admin-side and user-side dashboards for real-time insights</li>
+      </ul>
+    </p>
+ 
+  </div>
+</section>
+
+
+<!-- Why Choose Us Section -->
+<section class="py-14 px-6 max-w-6xl mx-auto">
+  <h2 class="text-2xl font-bold text-center mb-8">Why Choose Detectra?</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">🔍	AI-Powered Fraud Detection</h3>
+      <p class="text-gray-600 text-sm">Uses cutting-edge AI models to detect anomalies in claim documents and structured data with high accuracy.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">⚙️	Dual Verification System</h3>
+      <p class="text-gray-600 text-sm">Combines traditional form-based checks with NLP-based document analysis to validate both claim values and supporting documents like police reports.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold text-blue-700 mb-2">📊	Interactive Claim Dashboard</h3>
+      <p class="text-gray-600 text-sm">Admins and users can monitor policy status, flag suspicious claims, and receive alerts — all from a secure, easy-to-use dashboard.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Info Marquee and Project Note -->
+<marquee class="bg-yellow-100 text-yellow-800 py-2 font-semibold shadow-inner">
+  Note: This project uses synthetic data to demonstrate how an insurance company can detect fraud through claimer documents and Police Report and traditional methods that is using the claim amount with additional details.
+</marquee>
+
+<section class="bg-white py-6 px-6 shadow-inner text-center">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-xl font-bold text-blue-700 mb-2">Project Demo Access</h2>
+    <p class="text-gray-700 text-sm mb-4">
+      This is a demonstration project using synthetic (non-real) data to simulate how an insurance company can automate fraud detection. Since no real policy data is connected, you cannot log in using an actual policy number.
+    </p>
+    <p class="text-gray-800 text-sm font-medium">
+      Use the following credentials to log in to the admin dashboard and explore the fraud detection predictions:
+    </p>
+    <p class="mt-2 text-blue-800 font-semibold">Username: <code>Testing</code></p>
+    <p class="text-blue-800 font-semibold">Password: <code>Testing@123</code></p>
+  </div>
+</section>
+
+<!-- User Dashboard Login Info -->
+<section class="bg-white py-8 px-6 shadow-inner text-center">
+  <marquee class="bg-blue-100 text-blue-800 py-2 font-semibold shadow-inner rounded">
+    Note: The User Dashboard is currently under development to enhance user and admin interactions. You can log in with the credentials below to preview the available features.
+  </marquee>
+
+  <div class="max-w-4xl mx-auto mt-6">
+    <h2 class="text-2xl font-bold text-blue-700 mb-3">User Dashboard (In Progress)</h2>
+    <p class="text-gray-700 text-sm mb-6 px-2">
+      We are building a user-friendly dashboard to facilitate seamless communication between users and administrators. Although it’s still under construction, you are welcome to log in using the demo credentials below and explore what's available.
+    </p>
+
+    <div class="overflow-x-auto rounded-lg shadow-lg">
+      <table class="min-w-full border border-blue-200 bg-white rounded-lg">
+        <thead class="bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+          <tr>
+            <th class="px-6 py-3 border border-blue-600 text-left text-sm font-semibold">Username</th>
+            <th class="px-6 py-3 border border-blue-600 text-left text-sm font-semibold">Policy Number</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-800">
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Allison Hill</td>
+            <td class="px-6 py-3 border border-gray-300">6831113321</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Kristina Baldwin</td>
+            <td class="px-6 py-3 border border-gray-300">3733616459</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Daniel Gallagher</td>
+            <td class="px-6 py-3 border border-gray-300">4710360983</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Kimberly Dudley</td>
+            <td class="px-6 py-3 border border-gray-300">9415807788</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Dr. Sharon James</td>
+            <td class="px-6 py-3 border border-gray-300">5884882440</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Lisa Jackson</td>
+            <td class="px-6 py-3 border border-gray-300">5924716023</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Sarah Parsons</td>
+            <td class="px-6 py-3 border border-gray-300">7752612686</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Michelle Lewis</td>
+            <td class="px-6 py-3 border border-gray-300">1137651678</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Stephanie Ross</td>
+            <td class="px-6 py-3 border border-gray-300">2119634399</td>
+          </tr>
+          <tr class="hover:bg-blue-50 transition duration-200">
+            <td class="px-6 py-3 border border-gray-300">Michael Carlson</td>
+            <td class="px-6 py-3 border border-gray-300">6567496105</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <input type="text" placeholder="Your car number ex: DL-12-AB-2345"
-           class="w-full border border-gray-300 rounded-lg px-4 py-3 text-base mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-    <button class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg text-lg font-medium transition">Check Prices</button>
-
-    <p class="text-xs text-gray-500 mt-4">
-      By clicking, you agree to our <a href="#" class="text-blue-600 hover:underline">Terms</a> & <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>.
+    <p class="text-gray-700 text-sm mt-6 px-2">
+      Feel free to log in using the credentials above and explore the current dashboard functionality.
     </p>
   </div>
+</section>
 
+
+
+<!-- Footer -->
+<footer class="bg-blue-700 text-white py-12">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Social Media Links -->
+      <div>
+        <h3 class="text-xl font-semibold mb-4">Follow Us</h3>
+        <div class="flex space-x-6">
+          <a href="https://www.instagram.com" target="_blank" class="text-white hover:text-gray-200">
+            <i class="fab fa-instagram text-3xl"></i>
+          </a>
+          <a href="https://www.twitter.com" target="_blank" class="text-white hover:text-gray-200">
+            <i class="fab fa-twitter text-3xl"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Contact Us -->
+      <div>
+        <h3 class="text-xl font-semibold mb-4">Contact Us</h3>
+        <p class="text-sm">Have any questions or concerns? Reach out to us:</p>
+        <ul class="mt-4 text-sm space-y-2">
+          <li><a href="mailto:support@detectra.com" class="text-white hover:text-gray-200">support@detectra.com</a></li>
+        </ul>
+      </div>
+
+      <!-- Newsletter Signup -->
+      <div>
+        <h3 class="text-xl font-semibold mb-4">Subscribe to our Newsletter</h3>
+        <form class="flex space-x-2">
+          <input type="email" class="px-4 py-2 text-sm rounded-lg border focus:outline-none" placeholder="Your email" required>
+          <button type="submit" class="bg-yellow-500 text-white px-6 py-2 rounded-lg text-sm hover:bg-yellow-600">
+            Subscribe
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Bottom -->
+  <div class="text-center mt-12 text-sm">
+    <p>&copy; 2025 Detectra. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- Chatbot Popup Notification -->
+<div id="chatPopup" class="fixed bottom-28 right-32 bg-white border border-gray-300 rounded-lg shadow-lg p-3 text-sm text-gray-800 z-50 hidden">
+  👋 Hey! I'm <strong>Detectra Assistant</strong>. Need help?
 </div>
 
-<!-- Info Section (OUTSIDE CONTAINER) -->
-<div class="max-w-5xl mx-auto px-4 mb-10">
-  <h2 class="text-2xl font-bold text-gray-800 mb-4">What is Car Insurance?</h2>
-  <p class="text-gray-700 mb-4">Once you’ve secured the car of your dreams, the next step is to get car insurance from a reliable provider. Think of it as a safety net for your beloved ride and the loved ones who will use it. Car insurance is a contract between an insurer and you to protect you from accidents, theft, or natural calamities.</p>
-  <p class="text-gray-700 mb-4">According to the Motor Vehicles Act of 1988, every car owner must have at least a third-party insurance policy. You could also choose comprehensive insurance plans providing wider protection.</p>
-  <p class="text-gray-700 mb-6">Today, getting car insurance or renewing it has become very easy. You can find many online options, but we help you find the best value without breaking your bank.</p>
-</div>
+<!-- Chatbot Button -->
+<button id="chatbotToggle" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg">
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712039.png" alt="Chatbot" class="w-6 h-6">
+</button>
 
-<!-- Top Plans Section -->
-<div class="max-w-5xl mx-auto px-4">
-  <h2 class="text-2xl text-center font-bold text-gray-800 mb-6">Top Car Insurance Plans</h2>
-  <div id="plans-container"></div>
-  <div class="see-more">
-    <button onclick="showMorePlans()">See More Plans ▼</button>
+<!-- Chatbot Window -->
+<div id="chatbotWindow">
+  <div class="p-4 border-b bg-blue-600 text-white font-semibold">Detectra Assistant</div>
+  <div class="p-4 text-sm text-gray-700" id="chatMessages">
+    <p>Hello! Ask me anything about vehicle insurance fraud or price estimates.</p>
+  </div>
+  <div class="p-4">
+    <div class="text-sm">
+      <p class="font-semibold text-gray-800">Click a question:</p>
+      <button class="question-btn" onclick="displayAnswer('login_to_find_out')">When is my next policy due date?</button>
+      <button class="question-btn" onclick="displayAnswer('check_price')">What is my vehicle's market price?</button>
+      <button class="question-btn" onclick="displayAnswer('loogin')">What is password to login?</button>
+    </div>
   </div>
 </div>
 
-<!-- Key Features Section (OUTSIDE CONTAINER) -->
-<div class="max-w-5xl mx-auto px-4 mt-12 mb-12">
-  <h2 class="text-2xl font-bold text-gray-800 mb-4" style="text-align:center">Key Features of a Car Insurance Policy</h2>
-  <ul class="list-disc pl-6 text-gray-700 space-y-2">
-    <li><strong>Financial Protection Against Damages:</strong> Covers repair and replacement costs when your car is damaged due to accidents, theft, fire, vandalism, or natural calamities, reducing your out-of-pocket expenses.</li>
-    <li><strong>Third-Party Liability Coverage:</strong>  Legally required to drive in India, it protects you from financial and legal obligations if your car injures someone, damages their vehicle or their property.</li>
-    <li><strong>Personal Accident Cover:</strong> Financial Provides financial support if the owner-driver faces injury, disability, or death due to an accident, helping cover medical bills and loss of income.</li>
-    <li><strong>No Claim Bonus (NCB):</strong> Helps reduce your cost of renewal for having no claims made during the policy term, helping you save money over time.</li>
-    <li><strong>Cashless Repairs:</strong> Allows you to get your car repaired at network garages without paying upfront, with the insurer settling costs directly with the repair centre.</li>
-  </ul>
-</div>
-
-<!-- Plans Script -->
+<!-- Scripts -->
 <script>
-  const plansData = [
-    {
-      name: "Hdfc Ergo Car Insurance",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/9/9f/HDFC_ERGO_logo.png",
-      garages: "8000+",
-      settled: "100%",
-      claims: "UNLIMITED",
-      price: "₹ 2881",
-      features: ["Maximum Cashless Garages", "24x7 Roadside Assistance", "Over Night Vehicle Repairs", "Quick Claim Settlement"]
-    },
-    {
-      name: "United India Car Insurance",
-      logo: "https://upload.wikimedia.org/wikipedia/en/f/f6/United_India_Insurance_Company_Logo.png",
-      garages: "3,100",
-      settled: "95%",
-      claims: "UNLIMITED",
-      price: "₹ 2396",
-      features: ["Towing Assistance (For Accidents)", "PSU Provider", "Coverage Outside India", "Quick Claim Settlement"]
-    },
-    {
-      name: "Icici Lombard Car Insurance",
-      logo: "https://logos-world.net/wp-content/uploads/2021/09/ICICI-Bank-Logo.png",
-      garages: "6100+",
-      settled: "96.75%",
-      claims: "UNLIMITED",
-      price: "₹ 1000",
-      features: ["Towing Assistance (Till 50 kms)", "6-Month Repair Warranty", "Free Pick-Up and Drop", "Quick Claim Settlement"]
-    },
-    {
-      name: "New India Car Insurance",
-      logo: "https://companieslogo.com/img/orig/NEWINDIA.BO_BIG.D-00a5d81c.png",
-      garages: "3,000",
-      settled: "92%",
-      claims: "UNLIMITED",
-      price: "₹ 2494",
-      features: ["Towing Assistance till Rs 1,500", "Coverage Outside India", "PSU Provider", "Quick Claim Settlement"]
-    },
-    {
-      name: "Royal Sundaram Car Insurance",
-      logo: "https://companieslogo.com/img/orig/ROYALSUND.BO_BIG.D-bc69d243.png",
-      garages: "7600+",
-      settled: "99%",
-      claims: "UNLIMITED",
-      price: "₹ 3151",
-      features: ["Zero Depreciation till 7 years", "6-Month Repair Warranty", "Free Pick-Up and Drop", "Quick Claim Settlement"]
-    },
-    {
-      name: "Future Generali Car Insurance",
-      logo: "https://upload.wikimedia.org/wikipedia/en/thumb/7/7d/Future_Generali_Logo.svg/2560px-Future_Generali_Logo.svg.png",
-      garages: "3,500",
-      settled: "96%",
-      claims: "UNLIMITED",
-      price: "₹ 2094",
-      features: ["Towing Assistance (Accidents)", "Priority Car Repairs", "24x7 Roadside Assistance", "Quick Claim Settlement"]
+// Hero Section Slider
+let currentSlide = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const totalSlides = slides.length;
+
+function showSlide() {
+  slides.forEach((slide, index) => {
+    slide.classList.remove('active');
+    if (index === currentSlide) {
+      slide.classList.add('active');
     }
-  ];
+  });
+  currentSlide = (currentSlide + 1) % totalSlides;
+}
 
-  const plansContainer = document.getElementById("plans-container");
-  let shownPlans = 0;
+setInterval(showSlide, 5000); // Change slide every 5 seconds
+showSlide(); // Initialize the first slide
 
-  function renderPlan(plan) {
-    const card = document.createElement("div");
-    card.className = "card visible";
-    card.innerHTML = `
-      <div class="top-section">
-        <div class="logo-title">
-          <img src="${plan.logo}" alt="Logo">
-          <div><div class="label">${plan.name}</div></div>
-        </div>
-        <div><div class="label">Cashless Garages</div><div class="value">${plan.garages}</div></div>
-        <div><div class="label">Claims Settled</div><div class="value">${plan.settled}</div></div>
-        <div><div class="label">Comprehensive Claims</div><div class="value">${plan.claims}</div></div>
-      </div>
-      <div class="price-section">
-        <div><div class="label">Starting From</div><div class="price">${plan.price}</div></div>
-        <button class="check-button">Check Prices</button>
-      </div>
-      <div class="features">${plan.features.map(f => `<div>${f}</div>`).join('')}</div>
+// Toggle chatbot window
+const chatbotToggle = document.getElementById("chatbotToggle");
+const chatbotWindow = document.getElementById("chatbotWindow");
+const chatMessages = document.getElementById("chatMessages");
+const chatPopup = document.getElementById("chatPopup");
+
+chatbotToggle.addEventListener("click", () => {
+  chatMessages.innerHTML = '<p>Hello! Ask me anything about vehicle insurance fraud or price estimates.</p>';
+  chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
+  chatPopup.classList.add('hidden');  // Hide "Hi, I'm Detectra Assistant" message when chatbot is clicked
+});
+
+function displayAnswer(answerType) {
+  chatMessages.innerHTML = '';
+  let answer = '';
+
+  switch (answerType) {
+    case 'login_to_find_out':
+      answer = 'Please log in to find out your next policy due date.';
+      break;
+    case 'check_price':
+      answer = 'Please check the vehicle\'s price using the "Get Estimate" form above.';
+      break;
+    case 'loogin':
+      answer = 'The password is your Policy Number.';
+      break;
+    default:
+      answer = 'I\'m sorry, I didn\'t understand that. Please ask another question.';
+  }
+
+  chatMessages.innerHTML = `<p class="text-gray-700">Detectra Assistant: ${answer}</p>`;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Handle estimate form
+const form = document.getElementById('estimateForm');
+const resultBox = document.getElementById('estimateResult');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const engineNo = document.getElementById('engine_no').value.trim();
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // Validation
+  if (engineNo === '') {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Missing Engine Number',
+      text: 'Please enter the Engine Number.',
+    });
+    return;
+  }
+
+  const engineFormat = /^[A-Z0-9]{17}$/;
+  if (!engineFormat.test(engineNo)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Invalid Format',
+      text: 'Please enter exactly 17 uppercase letters/numbers.',
+    });
+    return;
+  }
+
+  resultBox.innerHTML = "Checking... 🔍";
+  resultBox.classList.remove('hidden');
+
+  const response = await fetch("{% url 'get_estimate' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({ engine_no: engineNo })
+  });
+
+  const data = await response.json();
+
+  if (data.error) {
+    resultBox.innerHTML = `<p class="text-red-600 font-semibold">${data.error}</p>`;
+  } else {
+    resultBox.innerHTML = `
+      <h3 class="text-xl font-bold text-blue-700 mb-2">Vehicle Estimate</h3>
+      <p class="text-gray-700"><strong>Name:</strong> ${data.name}</p>
+      <p class="text-gray-700"><strong>Body Type:</strong> ${data.body_type}</p>
+      <p class="text-gray-700"><strong>Market Price:</strong> ₹${data.market_price.toLocaleString()}</p>
     `;
-    plansContainer.appendChild(card);
   }
 
-  function showMorePlans() {
-    const next = plansData.slice(shownPlans, shownPlans + 2);
-    next.forEach(renderPlan);
-    shownPlans += next.length;
-    if (shownPlans >= plansData.length) {
-      document.querySelector('.see-more').style.display = 'none';
-    }
-  }
+  // Auto-scroll to result
+  resultBox.scrollIntoView({ behavior: "smooth" });
+});
 
-  showMorePlans();
+// Chatbot greeting popup (only appear after 2s and stay)
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    chatPopup.classList.remove('hidden');
+  }, 2000);
+});
 </script>
 
 </body>
 </html>
+
