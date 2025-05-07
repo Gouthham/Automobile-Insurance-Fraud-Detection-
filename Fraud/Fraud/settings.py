@@ -96,6 +96,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images, Videos)
 STATIC_URL = 'static/'
+STATICSTORAGE='whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
